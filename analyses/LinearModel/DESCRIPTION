@@ -1,0 +1,12 @@
+Package: LinearModel
+Type: Package
+Title:  Chinook lm wrapper
+Version: 1.1.1
+Date: 2016-01-24
+Author: Paul Shannon
+Maintainer:  <paul.thurmond.shannon@gmail.com>
+Depends: R (>= 3.2.3), BiocGenerics, RUnit, Dataset
+Suggests: RUnit
+Description:  An Oncoscape wrapper for lm (linear models) on any data.frame (entity by feature)
+License: GPL
+LazyLoad: yes

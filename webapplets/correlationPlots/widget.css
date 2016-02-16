@@ -1,0 +1,12 @@
+<style>
+.extent {
+  fill-opacity: .1;
+  stroke: #f00;
+  }
+
+.domain {
+  fill: none;
+  stroke: black;
+  stroke-width; 1;
+  }
+</style>

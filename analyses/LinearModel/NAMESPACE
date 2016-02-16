@@ -1,0 +1,11 @@
+exportClasses(LinearModel)
+
+export(
+  LinearModel
+  )
+
+exportMethods(
+  show,
+  lmDataSummary,
+  correlate
+  )

@@ -1,0 +1,10 @@
+exportClasses(ChinookLinearModel)
+
+export(
+    ChinookLinearModel,
+    LinearModel.correlate
+   )
+
+importClassesFrom(methods, character, integer)
+importFrom(methods, new)
+

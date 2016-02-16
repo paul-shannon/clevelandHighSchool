@@ -1,0 +1,13 @@
+Package: ChinookLinearModel
+Type: Package
+Title: ChinoookLinearModel: a wrapper for the LinearModel package
+Version: 1.0.0
+Date: 201d65-01-24
+Author: Paul Shannon
+Maintainer: Paul Shannon <paul.thurmond.shannon@gmail.com>
+Depends: R (>= 3.2.3), ChinookAnalysis, LinearModel, Groups
+Imports: methods, BiocGenerics
+Suggests: RUnit
+Description: Add a ChinookAnalysis facade to the LinearModel package
+License: GPL-2
+LazyLoad: yes

@@ -21,7 +21,7 @@ def testCorrelation():
   payload = result["payload"]
   fieldNames = list(payload.keys())
   fieldNames.sort()
-  assert(fieldNames == ['correlation', 'entities', 'vec1', 'vec1Name', 'vec2', 'vec2Name'])
+  assert(fieldNames == ['correlation', 'entities', 'vec1', 'vec1Max', 'vec1Min', 'vec1Name', 'vec2', 'vec2Max', 'vec2Min', 'vec2Name'])
   assert(payload['vec1Name'] == feature1)
   assert(payload['vec2Name'] == feature2)
   assert(payload['correlation'] == 0.8095)
@@ -29,25 +29,6 @@ def testCorrelation():
   assert(payload['vec2'] == [20.4, 18.4, 67.4, 24.3, 65.4, 13.2, 82.7, 79.9, 65, 7.4])
   assert(payload['entities'] == ['98102', '98105', '98106', '98107', '98108', '98116', '98122', '98144', '98178', '98199'])
   print("True")
-
-#----------------------------------------------------------------------------------------------------
-def testWithoutGeneset():
-
-  print("--- testWithoutGeneset")
-
-  payload = {"datasetName": "DEMOdz", "matrixName": "mtx.mrna.ueArray", "geneset": ""}
-  msg = dumps({"cmd": "calculatePCA", "status": "request", "callback":"", "payload": payload})
-  ws.send(msg)
-  result = loads(ws.recv())
-  payload = result["payload"]
-  fieldNames = list(payload.keys())
-  assert(fieldNames.index("ids") >= 0)
-  assert(fieldNames.index("maxValue") >= 0)
-  assert(fieldNames.index("scores") >= 0)
-  assert(fieldNames.index("importance.PC1") >= 0)
-  assert(fieldNames.index("importance.PC2") >= 0)
-  assert(len(payload["scores"]) == len(payload["ids"]))
-
 
 #----------------------------------------------------------------------------------------------------
 testCorrelation()

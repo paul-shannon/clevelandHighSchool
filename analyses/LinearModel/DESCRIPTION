@@ -1,8 +1,8 @@
 Package: LinearModel
 Type: Package
-Title:  Chinook lm wrapper
-Version: 1.1.1
-Date: 2016-01-24
+Title:  lm wrapper
+Version: 1.1.2
+Date: 2016-02-16
 Author: Paul Shannon
 Maintainer:  <paul.thurmond.shannon@gmail.com>
 Depends: R (>= 3.2.3), BiocGenerics, RUnit, Dataset

@@ -14,8 +14,8 @@ runTests <- function()
 
   testManifest()
   testConstructor();
-  testCanonicalizeSampleIDs()
-  testGetAllViaChinnok()
+  testSampleIdToSubjectId()
+  #testGetAllViaChinnok()
 
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ testManifest <- function()
       subcategory <- tbl$subcategory[i]
       entity.count <- tbl$entity.count[i]
       feature.count <- tbl$feature.count[i]
-      printf("tbl row %d, promised.class = '%s'", i, promised.class)
+      #printf("tbl row %d, promised.class = '%s'", i, promised.class)
       if(promised.class == "json")
           checkEquals(class(x[[1]]), "character")
       else
@@ -99,17 +99,23 @@ testConstructor <- function()
 
 } # testConstructor
 #----------------------------------------------------------------------------------------------------
-testCanonicalizeSampleIDs <- function()
+testSampleIdToSubjectId <- function()
 {
-   print("--- testCanonicalizeSampleIDs -- no yet implemented")
-}
+   printf("--- testSampleIdToSubjectId")
+
+   dp <- SouthSeattleHealthImpacts();
+   checkEquals(sampleIdToSubjectId(dp, "foo"), "foo")
+
+
+} # testSampleIdToSubjectId
 #----------------------------------------------------------------------------------------------------
 explore.correlation <- function()
 {
     printf("--- explore.correlation")
     d <- SouthSeattleHealthImpacts();
     checkTrue("tbl.factors" %in% getItemNames(d))
-    tbl.factors <- getItemByName(d, "tbl.factors")
+    tbl.factors <- getItem(d, "tbl.factors")
+
 
 } # explore.correlationp
 #----------------------------------------------------------------------------------------------------

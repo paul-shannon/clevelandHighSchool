@@ -1090,7 +1090,7 @@ var CorrelationPlotsModule = (function () {
   var xAxisLabel, yAxisLabel, correlation;
 
   var sendSelectionsMenu;
-  var thisModulesName = "CorrelationPlots";
+  var thisModulesName = "CorrelationPlotter";
   var thisModulesOutermostDiv = "CorrelationPlotsDiv";
 
   var sendSelectionsMenuTitle = "Send selection...";
@@ -1345,11 +1345,32 @@ function plotCorrelation(msg)
 
 } // plotCorrelation
 //--------------------------------------------------------------------------------
+function handleSelections(msg)
+{
+   console.log("--- Module.correlationPlots::handleSelections")
+   console.log(msg)
+   feature1 = msg.payload.value[0];
+   feature2 = msg.payload.value[1];
+   payload = {datasetName: datasetName,
+              dataframeName: "tbl.factors",
+              feature1: feature1,
+              feature2: feature2}
+   callback = "correlationPlot";
+   newMsg = {cmd: "correlateVectors", status: "request", callback: callback, payload: payload}
+   console.log("--- about to send correlation request");
+   console.log(newMsg);
+
+   hub.send(JSON.stringify(newMsg));
+
+
+} // handleSelections
+//--------------------------------------------------------------------------------
 function initializeModule()
 {
   hub.addOnDocumentReadyFunction(initializeUI);
   hub.addMessageHandler("datasetSpecified", datasetSpecified);
   hub.addMessageHandler("correlationPlot", plotCorrelation);
+  hub.addMessageHandler("sendSelectionTo_correlationsPlotter", handleSelections);
 
 } // initializeModule
 //----------------------------------------------------------------------------------------------------

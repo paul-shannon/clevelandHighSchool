@@ -1,8 +1,8 @@
 Package: ChinookLinearModel
 Type: Package
 Title: ChinoookLinearModel: a wrapper for the LinearModel package
-Version: 1.0.1
-Date: 2016-02-16
+Version: 1.0.2
+Date: 2016-02-17
 Author: Paul Shannon
 Maintainer: Paul Shannon <paul.thurmond.shannon@gmail.com>
 Depends: R (>= 3.2.3), ChinookAnalysis, LinearModel, Groups

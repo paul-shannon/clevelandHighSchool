@@ -59,6 +59,7 @@ LinearModel.correlate <- function(channel, msg)
                    vec1Max=xMax,
                    vec2Min=yMin,
                    vec2Max=yMax,
+                   yFit=x$yFit,
                    correlation=x$cor)
 
    response <- jsonlite::toJSON(list(cmd=msg$callback, callback="", status="success", payload=payload),

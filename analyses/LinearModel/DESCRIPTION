@@ -1,8 +1,8 @@
 Package: LinearModel
 Type: Package
 Title:  lm wrapper
-Version: 1.1.2
-Date: 2016-02-16
+Version: 1.1.3
+Date: 2016-02-17
 Author: Paul Shannon
 Maintainer:  <paul.thurmond.shannon@gmail.com>
 Depends: R (>= 3.2.3), BiocGenerics, RUnit, Dataset

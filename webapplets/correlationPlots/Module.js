@@ -9,6 +9,7 @@ var CorrelationPlotsModule = (function () {
   var selectedRegion;          // assigned out of brushReader function
   var dataReceived = false;    // when true, window resize does replot of data
   var dataset;                 // assigned from payload of incoming plotxy message
+  var fittedLine;              // assembled from payload yFit and x vector
   var xMin, xMax, yMin, yMax;  // conveniently calculated in R, part of payload
   var datasetLength;
   var xAxisLabel, yAxisLabel, correlation;
@@ -47,7 +48,7 @@ function handleWindowResize ()
 
       // an easy way to rescale the canvas when the browser window size changes: just redraw
    if(dataReceived)
-      d3plot(dataset, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
+      d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
 
 } // handleWindowResize
 //--------------------------------------------------------------------------------
@@ -78,6 +79,12 @@ function d3plotPrep (msg)
      dataset.push({x: payload.vec1[i], y: payload.vec2[i], id: payload.entities[i]});
      }
 
+   var yFit = msg.payload.yFit;
+   var xFit = msg.payload.vec1;
+   var lastElement = yFit.length - 1;
+
+   fittedLine = {x1: xFit[0], y1: yFit[0], x2: xFit[lastElement], y2: yFit[lastElement]};
+
    xMin = msg.payload.vec1Min;
    xMax = msg.payload.vec1Max;
    yMin = msg.payload.vec2Min;
@@ -91,14 +98,14 @@ function d3plotPrep (msg)
                      yAxisLabel + "</b></i>  (y)  &nbsp;  correlation: " +
                      correlation +
                      "</center>");
-   d3plot(dataset, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
+   d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
 
    //var return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
    //hub.send(return_msg);
 
 } // d3plotPrep
 //--------------------------------------------------------------------------------
-function d3plot(dataset, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
+function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
 {
   var width = plotDiv.width();
   var height = plotDiv.height();
@@ -153,6 +160,9 @@ function d3plot(dataset, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correla
                    .style("visibility", "hidden")
                    .text("a simple tooltip");
 
+   console.log("--- about to draw points, count: " + dataset.length);
+   console.log(JSON.stringify(dataset))
+
    svg.selectAll("circle")
       .data(dataset)
       .enter()
@@ -187,6 +197,32 @@ function d3plot(dataset, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correla
       .attr("class", "axis")
       .attr("transform", "translate(" + padding + ",0)")
       .call(yAxis);
+
+   console.log("--- about to draw regression line");
+   console.log(JSON.stringify(fittedLine))
+
+   svg.append("line")
+      .style("stroke-width", 1)
+      .style("stroke", "black")
+      .style("stroke-dasharray", ("3, 3"))
+      .attr("x1", xScale(fittedLine["x1"]))
+      .attr("y1", yScale(fittedLine["y1"]))
+      .attr("x2", xScale(fittedLine["x2"]))
+      .attr("y2", yScale(fittedLine["y2"]));
+
+   /**********
+   svg.selectAll("line")
+      .data(fittedLine)
+      .enter().append("line")
+      .attr("class", "line")
+      .style("stroke-width", 1)
+      .style("stroke", "green")
+      .attr("x1", function(f) {var x1 = f["x0"]; console.log("f[0]: " + x1);  return xScale(x1);})
+      .attr("y1", function(f) {var y1 = f["y0"]; console.log("f[1]: " + y1);  return yScale(y1);})
+      .attr("x2", function(f) {var x2 = f["x1"]; console.log("f[2]: " + x2);  return xScale(x2);})
+      .attr("y2", function(f) {var y2 = f["y1"]; console.log("f[3]: " + y2);  return yScale(y2);});
+    *********/
+
 
     /*********
     svg.append("text")

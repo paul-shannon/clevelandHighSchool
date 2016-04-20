@@ -2,16 +2,19 @@
 include(datasets/Module.js)
 include(../../webapplets/correlationPlots/Module.js)
 include(../../webapplets/maps/Module.js)
+include(../../webapplets/credits/Module.js)
 </script>
 
 <div id="oncoscapeTabs">
    <ul>
      <li><a href="#datasetsDiv">Datasets</a></li>
+     <li><a href="#clevelandCreditsDiv">Credits</a></li>
      <li><a href="#environmentalMapsDiv">Maps</a></li>
      <li><a href="#correlationPlotsDiv">Correlation Plot</a></li>
    </ul>
 
 include(datasets/widget.html)
+include(../../webapplets/credits/widget.html)
 include(../../webapplets/correlationPlots/widget.html)
 include(../../webapplets/maps/widget.html)
 </div>

@@ -333,7 +333,7 @@ function displayCategory(mapSVG, categoryMenu)
           var zipCodeIndex = regionNames.indexOf(zipCode);
           var value = data[zipCodeIndex];
           var dataCategoryFixed = dataCategory.replace(/\./gi, " ");
-          var msg = zipCode + "  " + dataCategoryFixed + ": " + value;
+          var msg = zipCode + '\n' + dataCategoryFixed + ": " + value;
           console.log("mouseover msg: " + msg);
           if(value == undefined)
              msg = zipCode;
@@ -367,7 +367,7 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
     .attr("width", leftMapDiv.width()) // width)
     .attr("height", leftMapDiv.height()); //height);
 
-  mapsTooltipDiv = d3.select(mapDivTag).append("mapsTooltipDiv")
+  mapsTooltipDiv = d3.select('body').append("mapsTooltipDiv")
                             .attr("class", "mapsTooltip")
                             .style("opacity", 0);
 

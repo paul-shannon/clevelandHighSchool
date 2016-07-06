@@ -12,8 +12,26 @@
   border-radius: 8px;
   border-color: gray;
   pointer-events: none;
-  }
-
+  white-space:pre; 
+}
+#leftMapDiv{
+  margin-top:20px;
+  margin-left: 20px; 
+  border-style:solid;
+  border-color:#a00;
+  border-width: 1px;
+}
+#rightMapDiv{
+  margin-top:20px;
+  margin-left: 20px;
+  border-style:solid;
+  border-color:#00a;
+  border-width: 1px;
+}
+  table{
+  table-layout:fixed; 
+  border-collapse: collapse;
+}
 </style>
 
 
@@ -27,7 +45,9 @@
                 <option val=""></option>
              </select>
           </div>
-          <div id="leftMapDiv" style="margin-left:20px; margin-top:20px; border: 1px solid #a00;"></div>
+           <div id="leftMap">
+	     <svg id="leftMapDiv" viewBox="50 50 450 630" ></svg>
+	   </div>
         </td>
         <td style="width:50%">
            <div id="rightControlsDiv" style="margin-top: 5px">
@@ -35,12 +55,13 @@
               <select id="rightDataCategorySelector" name="dataCategorySelector" class="selectorClass">
                  <option val=""></option>
               </select>
-             <button id="plotCorrelationButton" style="float:right; font-size: 10px">Correlation</button>
-             <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
-         </div>
-         <div id="rightMapDiv" style="margin-left:20px; margin-top:20px; border: 1px solid #00a;"></div>
+                <button id="plotCorrelationButton" style="float:right; font-size: 10px">Correlation</button>
+                <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
+           </div>
+           <div id="rightMap">
+	     <svg  id="rightMapDiv" viewBox="50 50 450 630"></svg>
+	   </div>
         </td>
       </tr>
     </table>
-
 </div>

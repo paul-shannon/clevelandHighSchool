@@ -1,4 +1,3 @@
-
 //----------------------------------------------------------------------------------------------------
 var DataTableModule = (function () {
 
@@ -102,8 +101,10 @@ function tableDisplay(divTag, zipCodes, factorsTable){
         dom: 'Bfrtip',
         buttons:
           ['copy', 'csv', 'excel', 'print'],
-        "bPaginate": false, 
-        data: dataSet, 
+          "bPaginate": false,
+	  "bInfo": false, 
+	  "bFilter": false,
+	  data: dataSet, 
 	columns: columnTitlesInOrder
       }); 
   }); 

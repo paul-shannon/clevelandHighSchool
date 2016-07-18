@@ -3,7 +3,7 @@ include(index.common)
 include(common.css)
 include(../../webapplets/correlationPlots/widget.css)
 
-<title>OncoDev14</title>
+<title>Cleveland</title>
 
 <script>
 include(hub/Module.js)

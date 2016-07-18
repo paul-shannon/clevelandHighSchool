@@ -137,7 +137,7 @@ background-color: rgb(255, 255, 255);
 </style>
 
 
-<title>OncoDev14</title>
+<title>Cleveland</title>
 
 <script>
 //----------------------------------------------------------------------------------------------------
@@ -2028,7 +2028,9 @@ function tableDisplay(divTag, zipCodes, factorsTable){
 			   extension: '.tsv'
 			 },
 			 { extend: 'csvFlash',
-			   filename: 'Data export'
+			   filename: 'Data export',
+			   exportOptions: {columns: ':visible'},
+			   exportData: {decodeEntities:true}
 			 },
 			 { extend: 'excelFlash',
 			   filename: 'Data export'
@@ -2224,7 +2226,7 @@ policies and actions to improve overall environmental health and equity in the D
              </select>
           </div>
            <div id="leftMap">
-	     <svg id="leftMapDiv" ></svg>
+	     <svg id="leftMapDiv" viewBox="50 50 450 630" ></svg>
 	   </div>
         </td>
         <td style="width:50%">
@@ -2237,7 +2239,7 @@ policies and actions to improve overall environmental health and equity in the D
                 <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
            </div>
            <div id="rightMap">
-	     <svg  id="rightMapDiv"></svg>
+	     <svg  id="rightMapDiv" viewBox="50 50 450 630"></svg>
 	   </div>
         </td>
       </tr>

@@ -341,7 +341,8 @@ function displayCategory(mapSVG, categoryMenu)
              .style("left", (d3.event.pageX) + "px")
              .style("top", (d3.event.pageY + 30) + "px");
              }) // on mouseover
-       .on("mouseout", function() {
+
+	.on("mouseout", function() {
           d3.select(this)
             .transition().duration(300)
             .style("opacity", 0.8);
@@ -351,7 +352,35 @@ function displayCategory(mapSVG, categoryMenu)
        .on("click", function(){
           console.log("--- mouseclick");
           console.log(this);
-          });
+       });
+
+
+
+    mapSVG.selectAll("g.neighborhoodLabel")
+	.on("mouseover", function(d){
+	    d3.select(this).transition().duration(300).style("opacity", 1);
+	     mapsTooltipDiv.transition().duration(300)
+             .style("opacity", 1)
+          var zipCode = d[0]; 
+          var zipCodeIndex = regionNames.indexOf(zipCode);
+          var value = data[zipCodeIndex];
+          var dataCategoryFixed = dataCategory.replace(/\./gi, " ");
+          var msg = zipCode + '\n' + dataCategoryFixed + ": " + value;
+          console.log("mouseover msg: " + msg);
+          if(value == undefined)
+             msg = zipCode;
+          mapsTooltipDiv.text(msg)
+             .style("left", (d3.event.pageX) + "px")
+             .style("top", (d3.event.pageY + 30) + "px");
+        }) // on mouseover
+    	.on("mouseout", function() {
+          d3.select(this)
+            .transition().duration(300)
+            .style("opacity", 0.8);
+          mapsTooltipDiv.transition().duration(300)
+             .style("opacity", 0);
+         }) // on mouseout
+    
 
 } // displayCategory
 //----------------------------------------------------------------------------------------------------
@@ -414,14 +443,15 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
 } // displayMap
 //----------------------------------------------------------------------------------------------------
 // a lot of this seems like magic, the logic not clear...
-function displayText(mapSVG)
+    function displayText(mapSVG, zipCodes, factorsTable)
 {
     // first delete
-  mapSVG.selectAll("g.neighborhoodLabel").remove();
+    mapSVG.selectAll("g.neighborhoodLabel").remove();
+
 
   var neighborhood =  mapSVG.selectAll("g.neighborhood")
     .data(neighborhoodLabels)
-    .enter()
+      .enter()
     .append("g")
     .attr("class", "neighborhoodLabel")
     .attr("transform", function(d) {
@@ -430,7 +460,25 @@ function displayText(mapSVG)
           console.log("long, d[3]: " + d[3]);
           console.log("lat,  d[2]: " + d[2]);
           return "translate(" + projection([ d[2], d[3]]) + ")";
-          });
+    })
+      .attr("d", path)
+    .on("mouseover", function(d) {
+      d3.select(this).transition().duration(300).style("opacity", 1);
+      mapsTooltipDiv.transition().duration(300)
+      .style("opacity", 1)
+      var id = d[0];
+      mapsTooltipDiv.text(id)
+      .style("left", (d3.event.pageX) + "px")
+      .style("top", (d3.event.pageY + 30) + "px");
+      }) // on mouseover
+    
+    .on("mouseout", function() {
+      d3.select(this)
+      .transition().duration(300)
+      .style("opacity", 0.8);
+      mapsTooltipDiv.transition().duration(300)
+        .style("opacity", 0);
+         }) // on mouseout;
 
   neighborhood.append("text")
       .text(function(d){console.log("adding text: " + d[1]); return d[1];});

@@ -3,7 +3,19 @@ include(datasets/Module.js)
 include(../../webapplets/correlationPlots/Module.js)
 include(../../webapplets/maps/Module.js)
 include(../../webapplets/credits/Module.js)
+include(../../webapplets/dataTable/Module.js)
 </script>
+
+<!--Datatables --> 
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<!--Export Buttons-->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.2.1/css/buttons.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.flash.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.print.min.js"></script>
 
 <div id="chinookTabs">
    <ul>
@@ -11,10 +23,12 @@ include(../../webapplets/credits/Module.js)
      <li><a href="#clevelandCreditsDiv">Credits</a></li>
      <li><a href="#environmentalMapsDiv">Maps</a></li>
      <li><a href="#correlationPlotsDiv">Correlation Plot</a></li>
+     <li><a href="#dataTableDiv"> Tabular View </a></li>
    </ul>
 
 include(datasets/widget.html)
 include(../../webapplets/credits/widget.html)
 include(../../webapplets/correlationPlots/widget.html)
 include(../../webapplets/maps/widget.html)
+include(../../webapplets/dataTable/widget.html)   
 </div>

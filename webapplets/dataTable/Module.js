@@ -99,8 +99,18 @@ function tableDisplay(divTag, zipCodes, factorsTable){
     console.log("document ready"); 
       $('#dataSetTable').DataTable({
         dom: 'Bfrtip',
-        buttons:
-          ['copy', 'csv', 'excel', 'print'],
+          buttons:[ {extend: 'collection', text:'Export',
+		     buttons: [
+			 'copy',
+			 { text: 'TSV',
+			   extend: 'csvHtml5',
+			   fieldSeparator: '\t',
+			   extension: '.tsv' },
+			 'csv',
+			 'excel',
+			 'print']
+		    }
+		  ], 
           "bPaginate": false,
 	  "bInfo": false, 
 	  "bFilter": false,

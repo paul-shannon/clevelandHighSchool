@@ -19,7 +19,7 @@ include(common.css)
 include(hub/Module.js)
 var hub = HubModule();
 hub.addOnDocumentReadyFunction(function() {
-  $("#oncoscapeTabs").tabs();
+  $("#chinookTabs").tabs();
   hub.raiseTab("datasetsDiv");
   })
 

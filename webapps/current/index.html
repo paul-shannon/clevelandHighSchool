@@ -1361,20 +1361,6 @@ function datasetSpecified(msg)
    console.log("corPlot, datasteSpecified, name: " + datasetName);
    console.log(msg);
 
-   feature1 = "Non.white.minority.population";
-   feature2 = "assault.hosp.per.100k";
-   payload = {datasetName: datasetName,
-              dataframeName: "tbl.factors",
-              feature1: feature1,
-              feature2: feature2}
-   callback = "correlationPlot";
-   newMsg = {cmd: "correlateVectors", status: "request", callback: callback,
-             payload: payload}
-   console.log("--- about to send correlation request");
-   console.log(newMsg);
-
-   hub.send(JSON.stringify(newMsg));
-
 } // datasetSpecified
 //--------------------------------------------------------------------------------
 function plotCorrelation(msg)
@@ -1762,7 +1748,7 @@ function displayCategory(mapSVG, categoryMenu)
           var zipCodeIndex = regionNames.indexOf(zipCode);
           var value = data[zipCodeIndex];
           var dataCategoryFixed = dataCategory.replace(/\./gi, " ");
-          var msg = zipCode + "  " + dataCategoryFixed + ": " + value;
+          var msg = zipCode + '\n' + dataCategoryFixed + ": " + value;
           console.log("mouseover msg: " + msg);
           if(value == undefined)
              msg = zipCode;
@@ -1796,7 +1782,7 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
     .attr("width", leftMapDiv.width()) // width)
     .attr("height", leftMapDiv.height()); //height);
 
-  mapsTooltipDiv = d3.select(mapDivTag).append("mapsTooltipDiv")
+  mapsTooltipDiv = d3.select('body').append("mapsTooltipDiv")
                             .attr("class", "mapsTooltip")
                             .style("opacity", 0);
 
@@ -1930,7 +1916,158 @@ clevelandCreditsModule = ClevelandCreditsModule();
 clevelandCreditsModule.init();
 
 
+//----------------------------------------------------------------------------------------------------
+var DataTableModule = (function () {
+
+  var datasetName = null;
+
+  var dataset;                 // assigned from payload of incoming plotxy message
+  var datasetLength;
+
+  var thisModulesName = "DataTable";
+  var thisModulesOutermostDiv = "DataTableDiv";
+
+  var contentDiv;
+
+//--------------------------------------------------------------------------------------------
+function initializeUI(){
+  contentDiv = $("#dataTableContentDiv")
+  $(window).resize(handleWindowResize);
+  handleWindowResize();
+
+  dataTableDiv=$("dataTableDiv");
+  dataTableControlsDiv=$("dataTableControlsDiv");
+
+}  // initializeUI
+//----------------------------------------------------------------------------------------------------
+function handleWindowResize (){
+  contentDiv.width(0.95 * $(window).width());
+  contentDiv.height(0.80 * $(window).height());
+
+} // handleWindowResize
+//--------------------------------------------------------------------------------
+function datasetSpecified(msg){
+
+  console.log("--- Module.cleveland: datasetSpecified: " + msg.payload);
+  hub.enableTab("dataTableDiv");
+    
+  datasetName = msg.payload;
+
+  console.log("dataTableModule, datasetSpecified, name: " + datasetName);
+  console.log(msg);
+
+  cmd="getDatasetItemsByName";
+  itemsRequested=["tbl.factors", "zipCodes"];
+  callback="displayDataTable";
+
+  var payload={datasetName: datasetName, items: itemsRequested}
+  var newMsg={cmd: cmd, callback: callback, status:"request", payload:payload};
+  hub.send(JSON.stringify(newMsg)); 
+
+} // datasetSpecified
+//--------------------------------------------------------------------------------
+function loadData(msg){
+  console.log("Module.cleveland, loadData");
+  var cmd = "getRegisteredMessagesNames";
+  var callback="displayDataTable";
+  var payload="SouthSeattleHealthImpacts";
+  var newMsg= {cmd: cmd, callback: callback, status: "request", payload: payload};
+
+  hub.send(JSON.stringify(newMsg));
+}
+    
+//--------------------------------------------------------------------------------
+function displayDataTable(msg){
+  console.log("displayDataTable");
+    
+  console.log("---- Module.SSEF displayDataTable");
+  console.log(JSON.stringify(msg.cmd));
+  zipCodes=JSON.parse(msg.payload["zipCodes"]);   
+  factorsTable = msg.payload["tbl.factors"];
+  //columnTitles = factorsTable.colnames;
+  //rowTitles = factorsTable.rownames;
+
+  display = tableDisplay("#dataSetTable", zipCodes,  factorsTable);
+ 	
+} // displayDataTable
+//--------------------------------------------------------------------------------
+function tableDisplay(divTag, zipCodes, factorsTable){
+
+  console.log(" ---- entering tableDisplay");
+  var columnTitles = factorsTable.colnames;
+  var rowTitles = factorsTable.rownames;
+  var matrix = factorsTable.mtx; 
+  columnTitles.unshift("Zip Code"); 
+    var dataSet= matrix;
+
+  console.log(zipCodes); 
+  
+  console.log(dataSet); 
+  console.log(columnTitles);
+  console.log(factorsTable.rownames); 
+
+  var columnTitlesInOrder =[];
+  for (var i=0; i <columnTitles.length; i++){
+    columnTitlesInOrder.push({title: columnTitles[i]});}
+
+  for(i=0; i<rowTitles.length; i++){
+    dataSet[i].unshift(rowTitles[i])}
+
+  $(function(){
+    console.log("document ready"); 
+      $('#dataSetTable').DataTable({
+        dom: 'Bfrtip',
+          buttons:[ {extend: 'collection', text:'Export',
+		     buttons: [
+			 'copy',
+			 { text: 'TSV',
+			   extend: 'csvHtml5',
+			   fieldSeparator: '\t',
+			   extension: '.tsv' },
+			 'csv',
+			 'excel',
+			 'print']
+		    }
+		  ], 
+          "bPaginate": false,
+	  "bInfo": false, 
+	  "bFilter": false,
+	  data: dataSet, 
+	columns: columnTitlesInOrder
+      }); 
+  }); 
+
+} //tableDisplay
+//--------------------------------------------------------------------------------
+function initializeModule(){
+  hub.addOnDocumentReadyFunction(initializeUI);
+  hub.addMessageHandler("datasetSpecified", datasetSpecified);
+  hub.addMessageHandler("displayDataTable", displayDataTable); 
+
+} // initializeModule
+//----------------------------------------------------------------------------------------------------
+return{
+  init: initializeModule
+
+};
+//----------------------------------------------------------------------------------------------------
+}); // DataTableModule
+
+dataTableModule = DataTableModule();
+dataTableModule.init();
+
 </script>
+
+<!--Datatables --> 
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<!--Export Buttons-->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.2.1/css/buttons.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.flash.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.print.min.js"></script>
 
 <div id="chinookTabs">
    <ul>
@@ -1938,6 +2075,7 @@ clevelandCreditsModule.init();
      <li><a href="#clevelandCreditsDiv">Credits</a></li>
      <li><a href="#environmentalMapsDiv">Maps</a></li>
      <li><a href="#correlationPlotsDiv">Correlation Plot</a></li>
+     <li><a href="#dataTableDiv"> Tabular View </a></li>
    </ul>
 
 <style>
@@ -2045,8 +2183,26 @@ policies and actions to improve overall environmental health and equity in the D
   border-radius: 8px;
   border-color: gray;
   pointer-events: none;
-  }
-
+  white-space:pre; 
+}
+#leftMapDiv{
+  margin-top:20px;
+  margin-left: 20px; 
+  border-style:solid;
+  border-color:#a00;
+  border-width: 1px;
+}
+#rightMapDiv{
+  margin-top:20px;
+  margin-left: 20px;
+  border-style:solid;
+  border-color:#00a;
+  border-width: 1px;
+}
+  table{
+  table-layout:fixed; 
+  border-collapse: collapse;
+}
 </style>
 
 
@@ -2060,7 +2216,9 @@ policies and actions to improve overall environmental health and equity in the D
                 <option val=""></option>
              </select>
           </div>
-          <div id="leftMapDiv" style="margin-left:20px; margin-top:20px; border: 1px solid #a00;"></div>
+           <div id="leftMap">
+	     <svg id="leftMapDiv" viewBox="50 50 450 630" ></svg>
+	   </div>
         </td>
         <td style="width:50%">
            <div id="rightControlsDiv" style="margin-top: 5px">
@@ -2068,16 +2226,24 @@ policies and actions to improve overall environmental health and equity in the D
               <select id="rightDataCategorySelector" name="dataCategorySelector" class="selectorClass">
                  <option val=""></option>
               </select>
-             <button id="plotCorrelationButton" style="float:right; font-size: 10px">Correlation</button>
-             <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
-         </div>
-         <div id="rightMapDiv" style="margin-left:20px; margin-top:20px; border: 1px solid #00a;"></div>
+                <button id="plotCorrelationButton" style="float:right; font-size: 10px">Correlation</button>
+                <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
+           </div>
+           <div id="rightMap">
+	     <svg  id="rightMapDiv" viewBox="50 50 450 630"></svg>
+	   </div>
         </td>
       </tr>
     </table>
-
 </div>
 
+<div id="dataTableDiv">
+   <div id="dataTableControlsDiv" style="margin: 40px; margin-right:160px"></div>
+   <div id="dataTableContentDiv" style="overflow:scroll; height:100%px; width:50%; overflow:auto">
+     <table id="dataSetTable" class="display" cellspacing="0" width="auto"></table>
+   </div>
+</div>
+   
 </div>
 
 </body>

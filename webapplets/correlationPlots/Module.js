@@ -279,20 +279,6 @@ function datasetSpecified(msg)
    console.log("corPlot, datasteSpecified, name: " + datasetName);
    console.log(msg);
 
-   feature1 = "Non.white.minority.population";
-   feature2 = "assault.hosp.per.100k";
-   payload = {datasetName: datasetName,
-              dataframeName: "tbl.factors",
-              feature1: feature1,
-              feature2: feature2}
-   callback = "correlationPlot";
-   newMsg = {cmd: "correlateVectors", status: "request", callback: callback,
-             payload: payload}
-   console.log("--- about to send correlation request");
-   console.log(newMsg);
-
-   hub.send(JSON.stringify(newMsg));
-
 } // datasetSpecified
 //--------------------------------------------------------------------------------
 function plotCorrelation(msg)

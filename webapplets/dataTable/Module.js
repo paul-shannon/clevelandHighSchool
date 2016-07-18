@@ -103,11 +103,17 @@ function tableDisplay(divTag, zipCodes, factorsTable){
 		     buttons: [
 			 'copy',
 			 { text: 'TSV',
-			   extend: 'csvHtml5',
+			   extend: 'csvFlash',
+			   filename: 'Data export',
 			   fieldSeparator: '\t',
-			   extension: '.tsv' },
-			 'csv',
-			 'excel',
+			   extension: '.tsv'
+			 },
+			 { extend: 'csvFlash',
+			   filename: 'Data export'
+			 },
+			 { extend: 'excelFlash',
+			   filename: 'Data export'
+			 },
 			 'print']
 		    }
 		  ], 

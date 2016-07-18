@@ -3,6 +3,8 @@ include(index.common)
 include(common.css)
 include(../../webapplets/correlationPlots/widget.css)
 
+<title>OncoDev14</title>
+
 <script>
 include(hub/Module.js)
 var hub = HubModule();

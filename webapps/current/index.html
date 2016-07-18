@@ -10,8 +10,6 @@
    <meta charset="UTF-8">
    <meta property="og:title" content="Oncoscape" />
 
-   <title> OncoDev 1.4</title>
-
    <script src="http://code.jquery.com/qunit/qunit-1.18.0.js"></script>
    <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.18.0.css">
 
@@ -138,6 +136,8 @@ background-color: rgb(255, 255, 255);
   }
 </style>
 
+
+<title>OncoDev14</title>
 
 <script>
 //----------------------------------------------------------------------------------------------------
@@ -1779,8 +1779,9 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
   d3.select(mapDivTag).select("svg").remove();
 
   svg = d3.select(mapDivTag).append("svg")
-    .attr("width", leftMapDiv.width()) // width)
-    .attr("height", leftMapDiv.height()); //height);
+	.attr("width", leftMapDiv.width()) // width)
+	.attr("height", leftMapDiv.height()); //height)
+
 
   mapsTooltipDiv = d3.select('body').append("mapsTooltipDiv")
                             .attr("class", "mapsTooltip")
@@ -2021,11 +2022,17 @@ function tableDisplay(divTag, zipCodes, factorsTable){
 		     buttons: [
 			 'copy',
 			 { text: 'TSV',
-			   extend: 'csvHtml5',
+			   extend: 'csvFlash',
+			   filename: 'Data export',
 			   fieldSeparator: '\t',
-			   extension: '.tsv' },
-			 'csv',
-			 'excel',
+			   extension: '.tsv'
+			 },
+			 { extend: 'csvFlash',
+			   filename: 'Data export'
+			 },
+			 { extend: 'excelFlash',
+			   filename: 'Data export'
+			 },
 			 'print']
 		    }
 		  ], 
@@ -2217,7 +2224,7 @@ policies and actions to improve overall environmental health and equity in the D
              </select>
           </div>
            <div id="leftMap">
-	     <svg id="leftMapDiv" viewBox="50 50 450 630" ></svg>
+	     <svg id="leftMapDiv" ></svg>
 	   </div>
         </td>
         <td style="width:50%">
@@ -2230,7 +2237,7 @@ policies and actions to improve overall environmental health and equity in the D
                 <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
            </div>
            <div id="rightMap">
-	     <svg  id="rightMapDiv" viewBox="50 50 450 630"></svg>
+	     <svg  id="rightMapDiv"></svg>
 	   </div>
         </td>
       </tr>

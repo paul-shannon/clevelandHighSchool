@@ -364,8 +364,9 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
   d3.select(mapDivTag).select("svg").remove();
 
   svg = d3.select(mapDivTag).append("svg")
-    .attr("width", leftMapDiv.width()) // width)
-    .attr("height", leftMapDiv.height()); //height);
+	.attr("width", leftMapDiv.width()) // width)
+	.attr("height", leftMapDiv.height()); //height)
+
 
   mapsTooltipDiv = d3.select('body').append("mapsTooltipDiv")
                             .attr("class", "mapsTooltip")

@@ -14,21 +14,28 @@
   pointer-events: none;
   white-space:pre; 
 }
-#leftMapDiv{
+#leftMap{
+  position: absolute; 
   margin-top:20px;
-  margin-left: 20px; 
+  float: left;
+  left: 0;
+  margin-left: 20px ; 
   border-style:solid;
   border-color:#a00;
   border-width: 1px;
+  height: 78%; 
 }
-#rightMapDiv{
+#rightMap{
+  position: absolute;
+  float: left;
   margin-top:20px;
-  margin-left: 20px;
+  margin-left: 20px ;
   border-style:solid;
   border-color:#00a;
   border-width: 1px;
+  height: 78%; 
 }
-  table{
+table{
   table-layout:fixed; 
   border-collapse: collapse;
 }
@@ -44,10 +51,10 @@
              <select id="leftDataCategorySelector" name="dataCategorySelector" class="selectorClass">
                 <option val=""></option>
              </select>
-          </div>
-           <div id="leftMap">
-	     <svg id="leftMapDiv" viewBox="50 50 450 630" ></svg>
-	   </div>
+           </div>
+	   <div id="leftMap">
+	     <svg id="leftMapDiv"></svg>
+	   </div> 
         </td>
         <td style="width:50%">
            <div id="rightControlsDiv" style="margin-top: 5px">
@@ -57,11 +64,13 @@
               </select>
                 <button id="plotCorrelationButton" style="float:right; font-size: 10px">Correlation</button>
                 <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
-           </div>
-           <div id="rightMap">
-	     <svg  id="rightMapDiv" viewBox="50 50 450 630"></svg>
+	   </div>
+	   <div id="rightMap"> 
+	     <svg id="rightMapDiv"></svg>
 	   </div>
         </td>
       </tr>
     </table>
 </div>
+
+    

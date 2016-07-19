@@ -10,6 +10,7 @@ var EnvironmentalMapModule = (function () {
 
   var environmentalMapsDiv;
   var enviroMapsControlsDiv;
+  var rightControlsDiv; 
   var sourceDocsButton, plotCorrelationButton;
 
   var sendSelectionsMenu;
@@ -47,6 +48,9 @@ var EnvironmentalMapModule = (function () {
   var mapTooltipDiv;
   var leftMapDiv, rightMapDiv;
 
+
+    var w; var h; 
+
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
@@ -67,6 +71,7 @@ function initializeUI()
 
   environmentalMapsDiv = $("#environmentalMapsDiv");
   enviroMapsControlsDiv = $("#enviroMapsControlsDiv");
+  rightControlsDiv=$("#rightControlsDiv"); 
 
   leftMapDiv = $("#leftMapDiv");
   rightMapDiv = $("#rightMapDiv");
@@ -81,9 +86,25 @@ function initializeUI()
   //                                                    sendSelections,
   //                                                    sendSelectionsMenuTitle);
 
-  handleWindowResize();
-
+    handleWindowResize();
+    initializeViewBox();
+    
 } // initializeUI
+//----------------------------------------------------------------------------------------------------
+function initializeViewBox()
+{
+  var controlsDivHeight = 20;
+  var mapWidth = environmentalMapsDiv.width() * 0.9;
+  var mapHeight = (0.95 * environmentalMapsDiv.height()) - controlsDivHeight;
+
+  var svg1 = $("#leftMapDiv").get(0);
+  svg1.setAttribute('viewBox', '0 0 ' + mapWidth + ' '+ mapHeight);
+  svg1.setAttribute('preserveAspectRatio', 'xMidYMid meet');  
+
+  var svg2 = $("#rightMapDiv").get(0);
+  svg2.setAttribute('viewBox', '0 0 ' + mapWidth + ' ' + mapHeight);
+
+} // initializeViewBox
 //----------------------------------------------------------------------------------------------------
 function setupSpecialSocket(websocket)
 {
@@ -101,14 +122,18 @@ handleWindowResize = function()
    var windowWidth = $(window).width();
    var windowHeight = $(window).height();
 
-   environmentalMapsDiv.height(windowHeight * 0.90)
+   environmentalMapsDiv.height(windowHeight * 0.95)
    environmentalMapsDiv.width(windowWidth * 0.475)
 
    enviroMapsControlsDiv.height(controlsDivHeight);
    enviroMapsControlsDiv.width(environmentalMapsDiv.width() * 0.95);
 
-   var mapWidth = environmentalMapsDiv.width() * 0.95
-   var mapHeight = (0.95 * environmentalMapsDiv.height()) - controlsDivHeight;
+    rightControlsDiv.height(controlsDivHeight);
+    rightControlsDiv.width(environmentalMapsDiv.width() * 0.95); 
+    
+
+    var mapWidth = environmentalMapsDiv.width() * 0.9;
+    var mapHeight = (0.95 * environmentalMapsDiv.height()) - controlsDivHeight;
 
    leftMapDiv.width(mapWidth);
    leftMapDiv.height(mapHeight);
@@ -129,7 +154,7 @@ handleWindowResize = function()
    var newScale = 150000 * (mapHeight/1000)
    projection.translate([tx, ty]).scale(newScale);
 
-   if(typeof(mapLeftSvg) != "undefined"){
+    if(typeof(mapLeftSvg) != "undefined"){
       mapLeftSVG.attr("width", mapWidth).attr("height", mapHeight);
       mapLeftSVG.selectAll('path').attr('d', path);
       displayText(mapLeftSVG);
@@ -139,9 +164,14 @@ handleWindowResize = function()
       mapRightSVG.attr("width", mapWidth).attr("height", mapHeight);
       mapRightSVG.selectAll('path').attr('d', path);
       displayText(mapRightSVG);
-      }
-
+   }
+    
+    //w = mapWidth;
+    //h = mapHeight; 
+    
 } // handleWindowResize
+ 
+
 //----------------------------------------------------------------------------------------------------
 function showSourceDocs()
 {
@@ -443,7 +473,7 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
 } // displayMap
 //----------------------------------------------------------------------------------------------------
 // a lot of this seems like magic, the logic not clear...
-    function displayText(mapSVG, zipCodes, factorsTable)
+function displayText(mapSVG, zipCodes, factorsTable)
 {
     // first delete
     mapSVG.selectAll("g.neighborhoodLabel").remove();
@@ -487,7 +517,10 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
 //----------------------------------------------------------------------------------------------------
 function getLeftDataCategory(msg)
 {
-  category = leftDataSelectionMenu.val()
+    category = leftDataSelectionMenu.val()
+
+
+    
   console.log("disabled! sending " + category + " back to jupyter?");
   var msg = {cmd: "handleResponse", callback: "", status: "successful", payload: category};
 

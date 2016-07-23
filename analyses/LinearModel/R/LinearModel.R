@@ -7,7 +7,7 @@ printf = function (...) print (noquote (sprintf (...)))
                    )
 #----------------------------------------------------------------------------------------------------
 setGeneric('lmDataSummary',   signature='obj', function(obj) standardGeneric ('lmDataSummary'))
-setGeneric("correlate",     signature='obj', function(obj, feature1, feature2) standardGeneric("correlate"))
+setGeneric("correlate",     signature='obj', function(obj, feature1, feature2, omittedEntities=NA) standardGeneric("correlate"))
 #----------------------------------------------------------------------------------------------------
 LinearModel <- function(dataset,  dataframe.name)
 {
@@ -39,9 +39,16 @@ setMethod("show", "LinearModel",
 #----------------------------------------------------------------------------------------------------
 setMethod("correlate", "LinearModel",
 
-   function(obj, feature1, feature2){
+   function(obj, feature1, feature2, omittedEntities=NA){
+
       df <- getItem(obj@dataset, obj@dataframe.name)
 
+      if(!all(is.na(omittedEntities))){
+         keeper.row.names <- setdiff(rownames(df), omittedEntities)
+         df <- df[keeper.row.names,]
+         printf(" *** LinearModel, after removing omittedEntites, nrow: %d", nrow(df))
+         }
+       
       vec1 <- df[, feature1]
       vec2 <- df[, feature2]
       entities <- rownames(df)

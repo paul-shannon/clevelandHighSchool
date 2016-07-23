@@ -31,16 +31,24 @@ LinearModel.correlate <- function(channel, msg)
 {
    printf("--- entering LinearModel.correlate")
    print(msg)
+
    datasetName <- msg$payload$datasetName
    dataframeName  <- msg$payload$dataframeName
+
    feature.1 <- msg$payload$feature1
    feature.2 <- msg$payload$feature2
 
+   omittedEntities <- NA
+   
+   if("leaveOut" %in% names(msg$payload)){
+      omittedEntities <- msg$payload$leaveOut
+      }
+       
    server <- getServer(local.state[["self"]])
    dataset <- getDatasetByName(server, datasetName)
    lm <- LinearModel(dataset, dataframeName)
 
-   x <- correlate(lm, feature.1, feature.2)
+   x <- correlate(lm, feature.1, feature.2, omittedEntities)
 
    xRange <- range(x$vec1)[2] - range(x$vec1)[1]
    xMin <- min(x$vec1) - (0.1 * xRange)

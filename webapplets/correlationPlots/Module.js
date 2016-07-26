@@ -7,6 +7,8 @@ var CorrelationPlotsModule = (function () {
   var plotDiv;
   var d3plotDiv;
   var selectedRegion;          // assigned out of brushReader function
+    var selectedIDs=[];
+    var selectedNames = [];
   var dataReceived = false;    // when true, window resize does replot of data
   var dataset;                 // assigned from payload of incoming plotxy message
   var fittedLine;              // assembled from payload yFit and x vector
@@ -26,29 +28,33 @@ var CorrelationPlotsModule = (function () {
       // make sure to register, eg,
       // hub.addMessageHandler("sendSelectionTo_EnvironmentalMap", handleSelections);
 
+    var recalculateRegression; 
 
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
-   plotTitleDiv = $("#correlationPlotTitleDiv");
-   plotDiv = $("#correlationPlottingDiv");
-   d3plotDiv = d3.select("#correlationPlottingDiv");
-   console.log("div: " + plotDiv)
-   $(window).resize(handleWindowResize);
-   handleWindowResize();
+  recalculateRegression = $("#recalculateRegression");
+  recalculateRegression.click(sendingSelectedIDs);
+  hub.disableButton(recalculateRegression); 
+  plotTitleDiv = $("#correlationPlotTitleDiv");
+  plotDiv = $("#correlationPlottingDiv");
+  d3plotDiv = d3.select("#correlationPlottingDiv");
+  console.log("div: " + plotDiv)
+  $(window).resize(handleWindowResize);
+  handleWindowResize();
 
 }  // initializeUI
 //----------------------------------------------------------------------------------------------------
 function handleWindowResize ()
 {
-   plotTitleDiv.width(0.95 * $(window).width());
-   plotTitleDiv.height("20px");
-   plotDiv.width(0.95 * $(window).width());
-   plotDiv.height(0.80 * $(window).height());
-
-      // an easy way to rescale the canvas when the browser window size changes: just redraw
-   if(dataReceived)
-      d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
+  plotTitleDiv.width(0.95 * $(window).width());
+  plotTitleDiv.height("20px");
+  plotDiv.width(0.95 * $(window).width());
+  plotDiv.height(0.80 * $(window).height());
+    
+  // an easy way to rescale the canvas when the browser window size changes: just redraw
+  if(dataReceived)
+    d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
 
 } // handleWindowResize
 //--------------------------------------------------------------------------------
@@ -60,48 +66,50 @@ function brushReader ()
   x1 = selectedRegion[1][0];
   width = Math.abs(x0-x1);
   if(width < 0.001)
-     selectedRegion = null
+    selectedRegion = null
 
+  getSelection(selectedIDs);
+    
 }; // d3PlotBrushReader
 //--------------------------------------------------------------------------------
 function d3plotPrep (msg)
 {
-   console.log("entering d3plotPrep");
-   payload = msg.payload;
-   dataReceived = true;
+  console.log("entering d3plotPrep");
+  payload = msg.payload;
+  dataReceived = true;
 
       // assign global variables
 
-   dataset = [];
-   datasetLength = payload.vec1.length;
+  dataset = [];
+  datasetLength = payload.vec1.length;
 
-   for(var i=0; i < datasetLength; i++){
-     dataset.push({x: payload.vec1[i], y: payload.vec2[i], id: payload.entities[i]});
-     }
+  for(var i=0; i < datasetLength; i++){
+    dataset.push({x: payload.vec1[i], y: payload.vec2[i], id: payload.entities[i]});
+  }
 
-   var yFit = msg.payload.yFit;
-   var xFit = msg.payload.vec1;
-   var lastElement = yFit.length - 1;
+  var yFit = msg.payload.yFit;
+  var xFit = msg.payload.vec1;
+  var lastElement = yFit.length - 1;
 
-   fittedLine = {x1: xFit[0], y1: yFit[0], x2: xFit[lastElement], y2: yFit[lastElement]};
+  fittedLine = {x1: xFit[0], y1: yFit[0], x2: xFit[lastElement], y2: yFit[lastElement]};
 
-   xMin = msg.payload.vec1Min;
-   xMax = msg.payload.vec1Max;
-   yMin = msg.payload.vec2Min;
-   yMax = msg.payload.vec2Max;
+  xMin = msg.payload.vec1Min;
+  xMax = msg.payload.vec1Max;
+  yMin = msg.payload.vec2Min;
+  yMax = msg.payload.vec2Max;
 
-   xAxisLabel = msg.payload.vec1Name;
-   yAxisLabel = msg.payload.vec2Name;
-   correlation = msg.payload.correlation;   // between -1.0 and 1.0
-   plotTitleDiv.html("<center> <i><b>" +
+  xAxisLabel = msg.payload.vec1Name;
+  yAxisLabel = msg.payload.vec2Name;
+  correlation = msg.payload.correlation;   // between -1.0 and 1.0
+  plotTitleDiv.html("<center> <i><b>" +
                      xAxisLabel + "</b></i> (x)  <i><b>vs.  " +
                      yAxisLabel + "</b></i>  (y)  &nbsp;  correlation: " +
                      correlation +
                      "</center>");
-   d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
+  d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
 
-   //var return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
-   //hub.send(return_msg);
+  //var return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
+  //hub.send(return_msg);
 
 } // d3plotPrep
 //--------------------------------------------------------------------------------
@@ -112,31 +120,29 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
 
   padding = 50;
   xScale = d3.scale.linear()
-                 .domain([xMin,xMax])
-                 .range([padding,width-padding]);
+             .domain([xMin,xMax])
+             .range([padding,width-padding]);
 
   yScale = d3.scale.linear()
-                 .domain([yMin, yMax])
-                 .range([height-padding, padding]); // note inversion
+             .domain([yMin, yMax])
+             .range([height-padding, padding]); // note inversion
 
-
-
-    // must remove the svg from a d3-selected object, not just a jQuery object
+  // must remove the svg from a d3-selected object, not just a jQuery object
   d3plotDiv.select("#plotSVG").remove();  // so that append("svg") is not cumulative
 
   d3brush = d3.svg.brush()
-        .x(xScale)
-        .y(yScale)
-        .on("brushend", brushReader);
+              .x(xScale)
+              .y(yScale)
+              .on("brushend", brushReader);
 
 
   var svg = d3.select("#correlationPlottingDiv")
-      .append("svg")
-      .attr("id", "plotSVG")
-      .attr("width", width)
-      .attr("height", height)
-      .call(d3brush);
-
+              .append("svg")
+              .attr("id", "plotSVG")
+              .attr("width", width)
+              .attr("height", height)
+              .call(d3brush);
+ 
   xAxis = d3.svg.axis()
                 .scale(xScale)
                 .ticks(10)
@@ -160,55 +166,55 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
                    .style("visibility", "hidden")
                    .text("a simple tooltip");
 
-   console.log("--- about to draw points, count: " + dataset.length);
-   console.log(JSON.stringify(dataset))
+  console.log("--- about to draw points, count: " + dataset.length);
+  console.log(JSON.stringify(dataset))
 
-   svg.selectAll("circle")
-      .data(dataset)
-      .enter()
-      .append("circle")
-      .attr("cx", function(d){
-         return xScale(d.x);
-        })
-      .attr("cy", function(d){
-         return yScale(d.y);
-         })
-      .attr("r", function(d){
-        return 5;
-        })
-      .style("fill", function(d){
-        return "red";
-        })
-      .on("mouseover", function(d,i){   // no id assigned yet...
-         tooltip.text(d.id);
-         return tooltip.style("visibility", "visible");
-         })
-      .on("mousemove", function(){
-         return tooltip.style("top",
-                (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
-      .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+  svg.selectAll("circle")
+     .data(dataset)
+     .enter()
+     .append("circle")
+     .attr("cx", function(d){
+       return xScale(d.x);
+     })
+     .attr("cy", function(d){
+       return yScale(d.y);
+     })
+     .attr("r", function(d){
+       return 5;
+     })
+     .style("fill", function(d){
+       return "red";
+     })
+     .on("mouseover", function(d,i){   // no id assigned yet...
+       tooltip.text(d.id);
+       return tooltip.style("visibility", "visible");
+     })
+     .on("mousemove", function(){
+       return tooltip.style("top",
+         (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+       .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 
-   svg.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate(0," + (height - padding) + ")")
-      .call(xAxis);
+  svg.append("g")
+     .attr("class", "axis")
+     .attr("transform", "translate(0," + (height - padding) + ")")
+     .call(xAxis);
 
-   svg.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate(" + padding + ",0)")
-      .call(yAxis);
+  svg.append("g")
+     .attr("class", "axis")
+     .attr("transform", "translate(" + padding + ",0)")
+     .call(yAxis);
 
-   console.log("--- about to draw regression line");
-   console.log(JSON.stringify(fittedLine))
+  console.log("--- about to draw regression line");
+  console.log(JSON.stringify(fittedLine))
 
-   svg.append("line")
-      .style("stroke-width", 1)
-      .style("stroke", "black")
-      .style("stroke-dasharray", ("3, 3"))
-      .attr("x1", xScale(fittedLine["x1"]))
-      .attr("y1", yScale(fittedLine["y1"]))
-      .attr("x2", xScale(fittedLine["x2"]))
-      .attr("y2", yScale(fittedLine["y2"]));
+  svg.append("line")
+     .style("stroke-width", 1)
+     .style("stroke", "black")
+     .style("stroke-dasharray", ("3, 3"))
+     .attr("x1", xScale(fittedLine["x1"]))
+     .attr("y1", yScale(fittedLine["y1"]))
+     .attr("x2", xScale(fittedLine["x2"]))
+     .attr("y2", yScale(fittedLine["y2"]));
 
    /**********
    svg.selectAll("line")
@@ -236,42 +242,154 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
 
 } // d3plot
 //--------------------------------------------------------------------------------
-function getSelection(msg)
+function getSelection(selectedIDs)
 {
-   var selectedNames = [];
-
-   if(selectedRegion == null){
-      var returnMsg = {cmd: msg.callback, callback: "", status: "success",
+  
+  var idWithoutSelection =[];
+	
+  if(selectedRegion == null)
+  {
+    var returnMsg = {cmd: msg.callback, callback: "", status: "success",
                         payload: selectedNames};
-      console.log("=== returning from getSelection, no selected points");
-      console.log(returnMsg);
-      hub.send(returnMsg);
+    console.log("=== returning from getSelection, no selected points");
+    console.log(returnMsg);
+    hub.send(returnMsg)
       return;
-      }
+    hub.disableButton(recalculateRegression);
+  }
+  else
+  {
+    hub.enableButton(recalculateRegression);
+  }
 
-   x0 = selectedRegion[0][0]
-   x1 = selectedRegion[1][0]
-   y0 = selectedRegion[0][1]
-   y1 = selectedRegion[1][1]
+  x0 = selectedRegion[0][0]
+  x1 = selectedRegion[1][0]
+  y0 = selectedRegion[0][1]
+  y1 = selectedRegion[1][1]
 
-   for(var i=0; i < datasetLength; i++){
-      x = dataset[i].x;
-      y = dataset[i].y;
-      if(x >= x0 & x <= x1 & y >= y0 & y <= y1) {
-        console.log ("TRUE");
-        selectedNames.push("point " + i);
-        }
-     } // for i
+  for(var i=0; i < datasetLength; i++)
+  {
+    x = dataset[i].x;
+    y = dataset[i].y;
+    if(x >= x0 & x <= x1 & y >= y0 & y <= y1){
+      console.log ("TRUE");
+      selectedNames.push(i);
+      selectedIDs.push(dataset[i].id);  
+    }
+    else{
+      idWithoutSelection.push(dataset[i].id);
+    }
+  } // for i
 
-   console.log(" found " + selectedNames.length + " selected points");
-   var returnMsg = {cmd: msg.callback, callback: "", status: "success",
-                    payload: selectedNames};
+  
+  console.log(" found " + selectedNames.length + " selected points");
+   
 
-   console.log("=== returning from getSelection, 2");
-   console.log(returnMsg);
-   hub.send(returnMsg);
+  console.log("=== returning from getSelection, 2");
 
 } // getSelection
+//--------------------------------------------------------------------------------
+function sendingSelectedIDs(msg)
+{
+
+  console.log("sending Selected IDs"); 
+
+  
+  payload = {datasetName: "SouthSeattleHealthImpacts",
+            dataframeName: "tbl.factors",
+            feature1: feature1,
+            feature2: feature2,
+            leaveOut: selectedIDs}
+
+  callback= "replotRegressionLine";
+    
+  var returnMsg = {cmd:"correlateVectors", callback: callback, status: "success",
+                    payload: payload};
+
+  console.log(returnMsg);
+  hub.send(JSON.stringify(returnMsg));
+
+ 
+  hub.disableButton(recalculateRegression);
+
+  selectedIDs = []; 
+} // sendingSelectedIDs
+//--------------------------------------------------------------------------------
+function replotRegressionLine(msg)
+{
+    
+  console.log("replotting the regression line");
+    
+  payload = msg.payload;
+
+  var dataset = []; 
+  datasetLength = payload.vec1.length;
+
+  for (var i=0; i<datasetLength; i++){
+    dataset.push({x: payload.vec1[i], y: payload.vec2[i], id: payload.entities[i]});
+  }
+
+  var yFit = payload.yFit;
+  var xFit = payload.vec1;
+  var lastElement = datasetLength - 1;
+
+  fittedLine1 = {x1: xFit[0], y1: yFit[0], x2: xFit[lastElement], y2: yFit[lastElement]};
+  correlation1 = payload.correlation;   // between -1.0 and 1.0
+  plotTitleDiv.html("<center> <i><b>" +
+                     xAxisLabel + "</b></i> (x)  <i><b>vs.  " +
+                     yAxisLabel + "</b></i> (y)  &nbsp;  correlation: " +
+                    correlation + "&nbsp; recalculated correlation: "
+		    + correlation1 +  "</center>");
+
+  displayingSecondLine(dataset, fittedLine1, correlation)
+
+}//replotRegressionLine	
+//--------------------------------------------------------------------------------
+function displayingSecondLine(dataset, fittedLine1, correlation)
+{
+
+  d3plotDiv.select("#secondLine").remove();  // so that append("svg") is not cumulative
+
+  var width = plotDiv.width();
+  var height = plotDiv.height();
+
+  padding = 50;
+
+
+  var svg = d3.select("#plotSVG")
+              .append("svg")
+              .attr("id", "plotSVG")
+              .attr("width", width)
+              .attr("height", height); 
+
+
+  var xTranslationForYAxis = xScale(0);
+  var yTranslationForXAxis = yScale(10);
+
+  var tooltip = d3plotDiv.append("div")
+                   .attr("class", "tooltip")
+                   .style("position", "absolute")
+                   .style("z-index", "10")
+                   .style("visibility", "hidden")
+                   .text("a simple tooltip");
+
+  console.log("--- about to draw points, count: " + dataset.length);
+  console.log(JSON.stringify(dataset))
+	
+  console.log("displaying second line"); 
+
+ console.log(JSON.stringify(fittedLine1))
+ 
+    svg.append("line")
+	.attr("id", "secondLine")
+     .style("stroke-width", 1)
+     .style("stroke", "green")
+     .attr("x1", xScale(fittedLine1["x1"]))
+     .attr("y1", yScale(fittedLine1["y1"]))
+     .attr("x2", xScale(fittedLine1["x2"]))
+     .attr("y2", yScale(fittedLine1["y2"]));
+
+}//displayingSecondLine	
 //--------------------------------------------------------------------------------
 function datasetSpecified(msg)
 {
@@ -317,6 +435,7 @@ function initializeModule()
   hub.addMessageHandler("datasetSpecified", datasetSpecified);
   hub.addMessageHandler("correlationPlot", plotCorrelation);
   hub.addMessageHandler("sendSelectionTo_correlationsPlotter", handleSelections);
+  hub.addMessageHandler("replotRegressionLine",replotRegressionLine); 
 
 } // initializeModule
 //----------------------------------------------------------------------------------------------------

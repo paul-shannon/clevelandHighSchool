@@ -75,5 +75,29 @@ test_correlateSomeLeftOut <- function()
 
 } # test_correlateSomeLeftOut
 #----------------------------------------------------------------------------------------------------
+test_verifyCorrelateSomeLeftOut <- function()
+{
+   printf("--- test_verifyCorrelateSomeLeftOut")
+
+   d <- SouthSeattleHealthImpacts()
+   dataframe.name <- "tbl.factors"
+   linearModel <- LinearModel(d, dataframe.name)
+   feature.1 <- "below.200pc.Poverty.Level"
+   feature.2 <- "Non.white.minority.population"
+   omittedEntities <- NA
+   x <- correlate(linearModel, feature.1, feature.2, omittedEntities)
+   checkTrue(all(c("entities", "vec1.name", "vec2.name", "vec1", "vec2", "cor", "yFit") %in% names(x)))
+   checkEquals(x$vec1.name, feature.1)
+   checkEquals(x$vec2.name, feature.2)
+   checkEquals(length(x$vec1), length(x$vec2))
+   checkEquals(length(x$vec1), length(x$yFit))
+   checkEqualsNumeric(x$cor, 0.652, tol=1e-3)
+   checkEqualsNumeric(min(x$yFit), 8.7, tol=0.1)
+   checkEqualsNumeric(max(x$yFit), 66.7, tol=0.1)
+   plot(x$vec1, x$vec2)
+   points(x$vec1, x$yFit, col="red")
+
+} # test_verifyCorrelateSomeLeftOut
+#----------------------------------------------------------------------------------------------------
 if(!interactive())
     runTests()

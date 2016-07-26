@@ -11,6 +11,7 @@ var hub = HubModule();
 hub.addOnDocumentReadyFunction(function() {
   $("#chinookTabs").tabs();
   hub.raiseTab("datasetsDiv");
+  hub.disableAllTabsExcept("datasetsDiv"); 
   })
 
 hub.start();

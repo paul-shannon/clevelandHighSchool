@@ -109,7 +109,9 @@ function tableDisplay(divTag, zipCodes, factorsTable){
 			   extension: '.tsv'
 			 },
 			 { extend: 'csvFlash',
-			   filename: 'Data export'
+			   filename: 'Data export',
+			   exportOptions: {columns: ':visible'},
+			   exportData: {decodeEntities:true}
 			 },
 			 { extend: 'excelFlash',
 			   filename: 'Data export'

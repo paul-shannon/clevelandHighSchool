@@ -53,8 +53,10 @@ function handleWindowResize ()
   plotDiv.height(0.80 * $(window).height());
     
   // an easy way to rescale the canvas when the browser window size changes: just redraw
-  if(dataReceived)
-    d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
+  if(dataReceived){
+      d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
+      displayingSecondLine(dataset, fittedLine1, correlation); }
+
 
 } // handleWindowResize
 //--------------------------------------------------------------------------------
@@ -103,7 +105,7 @@ function d3plotPrep (msg)
   correlation = msg.payload.correlation;   // between -1.0 and 1.0
   plotTitleDiv.html("<center> <i><b>" +
                      xAxisLabel + "</b></i> (x)  <i><b>vs.  " +
-                     yAxisLabel + "</b></i>  (y)  &nbsp;  correlation: " +
+                     yAxisLabel + "</b></i>  (y) </br>  &nbsp;  correlation: " +
                      correlation +
                      "</center>");
   d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
@@ -337,7 +339,7 @@ function replotRegressionLine(msg)
   correlation1 = payload.correlation;   // between -1.0 and 1.0
   plotTitleDiv.html("<center> <i><b>" +
                      xAxisLabel + "</b></i> (x)  <i><b>vs.  " +
-                     yAxisLabel + "</b></i> (y)  &nbsp;  correlation: " +
+                     yAxisLabel + "</b></i> (y) </br>  &nbsp;  correlation: " +
                     correlation + "&nbsp; recalculated correlation: "
 		    + correlation1 +  "</center>");
 

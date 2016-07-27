@@ -49,7 +49,7 @@ var EnvironmentalMapModule = (function () {
   var leftMapDiv, rightMapDiv;
 
 
-    var w; var h; 
+  var w; var h; 
 
 //--------------------------------------------------------------------------------------------
 function initializeUI()
@@ -86,34 +86,47 @@ function initializeUI()
   //                                                    sendSelections,
   //                                                    sendSelectionsMenuTitle);
 
-    handleWindowResize();
     initializeViewBox();
     
 } // initializeUI
 //----------------------------------------------------------------------------------------------------
 function initializeViewBox()
 {
-  var controlsDivHeight = 20;
-  var mapWidth = environmentalMapsDiv.width() * 0.9;
-  var mapHeight = (0.95 * environmentalMapsDiv.height()) - controlsDivHeight;
+  handleWindowResize();
 
+  var controlsDivHeight = 20;
+
+  var mapWidth = (environmentalMapsDiv.width() * 0.9); 
+  var mapHeight = (0.95 * environmentalMapsDiv.height()) - controlsDivHeight;
+    
   var svg1 = $("#leftMapDiv").get(0);
   svg1.setAttribute('viewBox', '0 0 ' + mapWidth + ' '+ mapHeight);
-  svg1.setAttribute('preserveAspectRatio', 'xMidYMid meet');  
+  svg1.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
 
   var svg2 = $("#rightMapDiv").get(0);
   svg2.setAttribute('viewBox', '0 0 ' + mapWidth + ' ' + mapHeight);
+  svg2.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    
+  var leftDiv = $("#leftMap").get(0);
+  leftDiv.style.width = mapWidth*1.1;
+  leftDiv.style.width = mapHeight*1.1;
+
+  var rightDiv = $("#rightMap").get(0);
+  rightDiv.style.width = mapWidth;
+  rightDiv.style.width = mapHeight; 
+    
 
 } // initializeViewBox
 //----------------------------------------------------------------------------------------------------
 function setupSpecialSocket(websocket)
 {
-   console.log("entering setupSpecialSocket")
+  console.log("entering setupSpecialSocket")
 
-   websocket.onopen    = function(evt) {onOpen(evt) };
-   websocket.onclose   = function(evt) {onClose(evt) };
-   websocket.onmessage = function(evt) {onMessage(evt) };
-   websocket.onerror   = function(evt) {onError(evt) };
+  websocket.onopen    = function(evt) {onOpen(evt) };
+  websocket.onclose   = function(evt) {onClose(evt) };
+  websocket.onmessage = function(evt) {onMessage(evt) };
+  websocket.onerror   = function(evt) {onError(evt) };
 }
 //----------------------------------------------------------------------------------------------------
 handleWindowResize = function()
@@ -128,12 +141,12 @@ handleWindowResize = function()
    enviroMapsControlsDiv.height(controlsDivHeight);
    enviroMapsControlsDiv.width(environmentalMapsDiv.width() * 0.95);
 
-    rightControlsDiv.height(controlsDivHeight);
-    rightControlsDiv.width(environmentalMapsDiv.width() * 0.95); 
+   rightControlsDiv.height(controlsDivHeight);
+   rightControlsDiv.width(environmentalMapsDiv.width() * 0.95); 
     
 
-    var mapWidth = environmentalMapsDiv.width() * 0.9;
-    var mapHeight = (0.95 * environmentalMapsDiv.height()) - controlsDivHeight;
+   var mapWidth = environmentalMapsDiv.width() * 0.9;
+   var mapHeight = (0.95 * environmentalMapsDiv.height()) - controlsDivHeight;
 
    leftMapDiv.width(mapWidth);
    leftMapDiv.height(mapHeight);
@@ -165,13 +178,8 @@ handleWindowResize = function()
       mapRightSVG.selectAll('path').attr('d', path);
       displayText(mapRightSVG);
    }
-    
-    //w = mapWidth;
-    //h = mapHeight; 
-    
+   
 } // handleWindowResize
- 
-
 //----------------------------------------------------------------------------------------------------
 function showSourceDocs()
 {
@@ -207,8 +215,8 @@ function sendSelections(event)
 
   var newMsg = {cmd: cmd,  callback: "", status: "request", payload: payload};
 
-      // restore default (informational) title of the menu
-   sendSelectionsMenu.val(sendSelectionsMenuTitle);
+  // restore default (informational) title of the menu
+  sendSelectionsMenu.val(sendSelectionsMenuTitle);
 
   hub.send(JSON.stringify(newMsg));
 
@@ -476,7 +484,7 @@ function createMap(mapDivTag, selectorMenuTag, zipCodes, factorsTable)
 function displayText(mapSVG, zipCodes, factorsTable)
 {
     // first delete
-    mapSVG.selectAll("g.neighborhoodLabel").remove();
+  mapSVG.selectAll("g.neighborhoodLabel").remove();
 
 
   var neighborhood =  mapSVG.selectAll("g.neighborhood")
@@ -517,10 +525,8 @@ function displayText(mapSVG, zipCodes, factorsTable)
 //----------------------------------------------------------------------------------------------------
 function getLeftDataCategory(msg)
 {
-    category = leftDataSelectionMenu.val()
-
-
-    
+  category = leftDataSelectionMenu.val()
+  
   console.log("disabled! sending " + category + " back to jupyter?");
   var msg = {cmd: "handleResponse", callback: "", status: "successful", payload: category};
 

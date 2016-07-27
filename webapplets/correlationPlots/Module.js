@@ -58,7 +58,7 @@ function handleWindowResize ()
   if(dataReceived)
       d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
 
-  // redisplays the second line
+  // redisplays the second line as the window size changes
   if (regressionLine2 != null )
      displayingSecondLine(dataset, regressionLine2, correlation2); 
 
@@ -66,7 +66,7 @@ function handleWindowResize ()
 //--------------------------------------------------------------------------------
 function brushReader ()
 {
-  selectedIDs = []; 
+  selectedIDs = []; // prevents the brushReader from collecting selectedIDs
   console.log("brushReader");
   selectedRegion = d3brush.extent();
   x0 = selectedRegion[0][0];
@@ -113,6 +113,7 @@ function d3plotPrep (msg)
                      yAxisLabel + "</b></i>  (y) </br>  &nbsp;  correlation: " +
                      correlation +
                      "</center>");
+
   d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation)
 
   //var return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
@@ -252,9 +253,10 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
 function getSelection(selectedIDs)
 {
   console.log("--- entering getSelection");   
+
   var selectedNames = [];
     
-  if(selectedRegion == null || selectedRegion.length <1)
+  if(selectedRegion == null)
   {
     var returnMsg = {cmd: msg.callback, callback: "", status: "success",
                         payload: selectedNames};
@@ -284,8 +286,8 @@ function getSelection(selectedIDs)
     }  
   } // for i
 
-  if (selectedNames.length < 1) //when the selection is dragged to a place w/o points, this disables the button 
-    hub.disableButton(recalculateRegression) 
+  if (selectedNames.length < 1) //when the selection is dragged to a place w/o points, this disables the button
+   hub.disableButton(recalculateRegression) 
     
   console.log(" found " + selectedNames.length + " selected points");
    

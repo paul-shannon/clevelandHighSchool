@@ -15,30 +15,24 @@
   white-space:pre; 
 }
 #leftMap{
-  position: absolute; 
   margin-top:20px;
-  float: left;
-  left: 0;
   margin-left: 20px ; 
   border-style:solid;
   border-color:#a00;
-  border-width: 1px;
-  height: 78%; 
+border-width: 1px;
+width: 95%;
+height: 78%;
 }
 #rightMap{
-  position: absolute;
-  float: left;
   margin-top:20px;
   margin-left: 20px ;
   border-style:solid;
   border-color:#00a;
-  border-width: 1px;
-  height: 78%; 
+border-width: 1px;
+width: 95%;
+height: 78%; 
 }
-table{
-  table-layout:fixed; 
-  border-collapse: collapse;
-}
+
 </style>
 
 
@@ -65,7 +59,7 @@ table{
                 <button id="plotCorrelationButton" style="float:right; font-size: 10px">Correlation</button>
                 <button id="enviroMapsSourceDocumentButton" style="float:right; font-size: 10px">Source Docs</button>
 	   </div>
-	   <div id="rightMap"> 
+	   <div id="rightMap" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
 	     <svg id="rightMapDiv"></svg>
 	   </div>
         </td>

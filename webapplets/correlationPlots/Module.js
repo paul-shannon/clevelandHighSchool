@@ -2,16 +2,17 @@
 var CorrelationPlotsModule = (function () {
 
   var datasetName = null;
-
   var plotTitleDiv;
   var plotDiv;
   var d3plotDiv;
   var selectedRegion;          // assigned out of brushReader function
-    var selectedIDs=[];
-    var selectedNames = [];
-  var dataReceived = false;    // when true, window resize does replot of data
+  var selectedIDs=[];       // empty array, zipCodes 
+  var dataReceived = false; // when true, window resize does replot of data
   var dataset;                 // assigned from payload of incoming plotxy message
+
   var fittedLine;              // assembled from payload yFit and x vector
+  var regressionLine2 = null; //when != null, handleWindowResize resizes the line, second "fitted Line"
+
   var xMin, xMax, yMin, yMax;  // conveniently calculated in R, part of payload
   var datasetLength;
   var xAxisLabel, yAxisLabel, correlation;
@@ -28,14 +29,15 @@ var CorrelationPlotsModule = (function () {
       // make sure to register, eg,
       // hub.addMessageHandler("sendSelectionTo_EnvironmentalMap", handleSelections);
 
-    var recalculateRegression; 
+  var recalculateRegression; 
 
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
   recalculateRegression = $("#recalculateRegression");
-  recalculateRegression.click(sendingSelectedIDs);
-  hub.disableButton(recalculateRegression); 
+  recalculateRegression.click(sendingSelectedIDs); //sends selectedIDs to the hub
+  hub.disableButton(recalculateRegression); // automatically disables button
+
   plotTitleDiv = $("#correlationPlotTitleDiv");
   plotDiv = $("#correlationPlottingDiv");
   d3plotDiv = d3.select("#correlationPlottingDiv");
@@ -53,35 +55,38 @@ function handleWindowResize ()
   plotDiv.height(0.80 * $(window).height());
     
   // an easy way to rescale the canvas when the browser window size changes: just redraw
-  if(dataReceived){
+  if(dataReceived)
       d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLabel, correlation);
-      displayingSecondLine(dataset, fittedLine1, correlation); }
 
+  // redisplays the second line
+  if (regressionLine2 != null )
+     displayingSecondLine(dataset, regressionLine2, correlation2); 
 
 } // handleWindowResize
 //--------------------------------------------------------------------------------
 function brushReader ()
 {
+  selectedIDs = []; 
   console.log("brushReader");
   selectedRegion = d3brush.extent();
   x0 = selectedRegion[0][0];
   x1 = selectedRegion[1][0];
   width = Math.abs(x0-x1);
-  if(width < 0.001)
+  if(width < 0.001) 
     selectedRegion = null
-
-  getSelection(selectedIDs);
+  else{
+    getSelection(selectedIDs);}
     
 }; // d3PlotBrushReader
 //--------------------------------------------------------------------------------
 function d3plotPrep (msg)
 {
   console.log("entering d3plotPrep");
-  payload = msg.payload;
+
   dataReceived = true;
+  payload = msg.payload;
 
-      // assign global variables
-
+  // assign global variables
   dataset = [];
   datasetLength = payload.vec1.length;
 
@@ -244,12 +249,30 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
 
 } // d3plot
 //--------------------------------------------------------------------------------
+function datasetSpecified(msg)
+{
+   datasetName = msg.payload;
+   console.log("corPlot, datasteSpecified, name: " + datasetName);
+   console.log(msg);
+
+} // datasetSpecified
+//--------------------------------------------------------------------------------
+function plotCorrelation(msg)
+{
+   hub.enableTab("correlationPlotsDiv");
+   hub.raiseTab("correlationPlotsDiv");
+   console.log("--- Module.cor, plotCorrelation")
+   console.log(JSON.stringify(msg));
+   d3plotPrep (msg)
+
+} // plotCorrelation
+//--------------------------------------------------------------------------------
 function getSelection(selectedIDs)
 {
-  
-  var idWithoutSelection =[];
-	
-  if(selectedRegion == null)
+  console.log("--- entering getSelection");   
+  var selectedNames = [];
+    
+  if(selectedRegion == null || selectedRegion.length <1)
   {
     var returnMsg = {cmd: msg.callback, callback: "", status: "success",
                         payload: selectedNames};
@@ -259,16 +282,14 @@ function getSelection(selectedIDs)
       return;
     hub.disableButton(recalculateRegression);
   }
-  else
-  {
-    hub.enableButton(recalculateRegression);
-  }
-
+    
   x0 = selectedRegion[0][0]
   x1 = selectedRegion[1][0]
   y0 = selectedRegion[0][1]
   y1 = selectedRegion[1][1]
 
+  var datasetLength = dataset.length; //resets the length to the length of the dataset 
+    
   for(var i=0; i < datasetLength; i++)
   {
     x = dataset[i].x;
@@ -276,32 +297,27 @@ function getSelection(selectedIDs)
     if(x >= x0 & x <= x1 & y >= y0 & y <= y1){
       console.log ("TRUE");
       selectedNames.push(i);
-      selectedIDs.push(dataset[i].id);  
-    }
-    else{
-      idWithoutSelection.push(dataset[i].id);
-    }
+      selectedIDs.push(dataset[i].id); //collects selectedIDs
+      hub.enableButton(recalculateRegression); //only if there are points will the button be enabled 
+    }  
   } // for i
 
-  
+  if (selectedNames.length < 1) //when the selection is dragged to a place w/o points, this disables the button 
+    hub.disableButton(recalculateRegression) 
+    
   console.log(" found " + selectedNames.length + " selected points");
    
-
-  console.log("=== returning from getSelection, 2");
-
 } // getSelection
 //--------------------------------------------------------------------------------
 function sendingSelectedIDs(msg)
 {
-
   console.log("sending Selected IDs"); 
-
   
   payload = {datasetName: "SouthSeattleHealthImpacts",
             dataframeName: "tbl.factors",
             feature1: feature1,
             feature2: feature2,
-            leaveOut: selectedIDs}
+            leaveOut: selectedIDs}  
 
   callback= "replotRegressionLine";
     
@@ -312,13 +328,13 @@ function sendingSelectedIDs(msg)
   hub.send(JSON.stringify(returnMsg));
 
  
-  hub.disableButton(recalculateRegression);
+  hub.disableButton(recalculateRegression); //disables the button once it is clicked, requires a new selection to be enabled 
 
-  selectedIDs = []; 
 } // sendingSelectedIDs
 //--------------------------------------------------------------------------------
 function replotRegressionLine(msg)
 {
+  d3plotDiv.select("#secondLine").remove();  //so that the secondLine does not accumulate after every selection 
     
   console.log("replotting the regression line");
     
@@ -335,22 +351,20 @@ function replotRegressionLine(msg)
   var xFit = payload.vec1;
   var lastElement = datasetLength - 1;
 
-  fittedLine1 = {x1: xFit[0], y1: yFit[0], x2: xFit[lastElement], y2: yFit[lastElement]};
-  correlation1 = payload.correlation;   // between -1.0 and 1.0
+  regressionLine2 = {x1: xFit[0], y1: yFit[0], x2: xFit[lastElement], y2: yFit[lastElement]};
+  correlation2 = payload.correlation;   // between -1.0 and 1.0
   plotTitleDiv.html("<center> <i><b>" +
                      xAxisLabel + "</b></i> (x)  <i><b>vs.  " +
                      yAxisLabel + "</b></i> (y) </br>  &nbsp;  correlation: " +
                     correlation + "&nbsp; recalculated correlation: "
-		    + correlation1 +  "</center>");
+		    + correlation2 +  "</center>");
 
-  displayingSecondLine(dataset, fittedLine1, correlation)
+  displayingSecondLine(dataset, regressionLine2, correlation2)
 
 }//replotRegressionLine	
 //--------------------------------------------------------------------------------
-function displayingSecondLine(dataset, fittedLine1, correlation)
+function displayingSecondLine(dataset, regressionLine2, correlation)
 {
-
-  d3plotDiv.select("#secondLine").remove();  // so that append("svg") is not cumulative
 
   var width = plotDiv.width();
   var height = plotDiv.height();
@@ -380,36 +394,20 @@ function displayingSecondLine(dataset, fittedLine1, correlation)
 	
   console.log("displaying second line"); 
 
- console.log(JSON.stringify(fittedLine1))
- 
-    svg.append("line")
-	.attr("id", "secondLine")
-     .style("stroke-width", 1)
-     .style("stroke", "green")
-     .attr("x1", xScale(fittedLine1["x1"]))
-     .attr("y1", yScale(fittedLine1["y1"]))
-     .attr("x2", xScale(fittedLine1["x2"]))
-     .attr("y2", yScale(fittedLine1["y2"]));
+ console.log(JSON.stringify(regressionLine2))
+
+  //svg id is secondLine (that way it can be removed after every selection)
+    
+  svg.append("line")
+    .attr("id", "secondLine")
+    .style("stroke-width", 1)
+    .style("stroke", "green")
+    .attr("x1", xScale(regressionLine2["x1"]))
+    .attr("y1", yScale(regressionLine2["y1"]))
+    .attr("x2", xScale(regressionLine2["x2"]))
+    .attr("y2", yScale(regressionLine2["y2"]));
 
 }//displayingSecondLine	
-//--------------------------------------------------------------------------------
-function datasetSpecified(msg)
-{
-   datasetName = msg.payload;
-   console.log("corPlot, datasteSpecified, name: " + datasetName);
-   console.log(msg);
-
-} // datasetSpecified
-//--------------------------------------------------------------------------------
-function plotCorrelation(msg)
-{
-   hub.enableTab("correlationPlotsDiv");
-   hub.raiseTab("correlationPlotsDiv");
-   console.log("--- Module.cor, plotCorrelation")
-   console.log(JSON.stringify(msg));
-   d3plotPrep (msg)
-
-} // plotCorrelation
 //--------------------------------------------------------------------------------
 function handleSelections(msg)
 {

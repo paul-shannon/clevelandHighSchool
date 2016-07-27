@@ -249,24 +249,6 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
 
 } // d3plot
 //--------------------------------------------------------------------------------
-function datasetSpecified(msg)
-{
-   datasetName = msg.payload;
-   console.log("corPlot, datasteSpecified, name: " + datasetName);
-   console.log(msg);
-
-} // datasetSpecified
-//--------------------------------------------------------------------------------
-function plotCorrelation(msg)
-{
-   hub.enableTab("correlationPlotsDiv");
-   hub.raiseTab("correlationPlotsDiv");
-   console.log("--- Module.cor, plotCorrelation")
-   console.log(JSON.stringify(msg));
-   d3plotPrep (msg)
-
-} // plotCorrelation
-//--------------------------------------------------------------------------------
 function getSelection(selectedIDs)
 {
   console.log("--- entering getSelection");   
@@ -426,8 +408,25 @@ function handleSelections(msg)
 
    hub.send(JSON.stringify(newMsg));
 
-
 } // handleSelections
+//--------------------------------------------------------------------------------
+function datasetSpecified(msg)
+{
+   datasetName = msg.payload;
+   console.log("corPlot, datasteSpecified, name: " + datasetName);
+   console.log(msg);
+
+} // datasetSpecified
+//--------------------------------------------------------------------------------
+function plotCorrelation(msg)
+{
+   hub.enableTab("correlationPlotsDiv");
+   hub.raiseTab("correlationPlotsDiv");
+   console.log("--- Module.cor, plotCorrelation")
+   console.log(JSON.stringify(msg));
+   d3plotPrep (msg)
+
+} // plotCorrelation
 //--------------------------------------------------------------------------------
 function initializeModule()
 {

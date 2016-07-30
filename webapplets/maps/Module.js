@@ -1,6 +1,4 @@
 //----------------------------------------------------------------------------------------------------
-  var dataTable;
-  var mapLeftSVG, mapRightSVG;
 
 var EnvironmentalMapModule = (function () {
 
@@ -48,7 +46,9 @@ var EnvironmentalMapModule = (function () {
   var mapTooltipDiv;
   var leftMapDiv, rightMapDiv;
 
-
+  var dataTable;
+  var mapLeftSVG, mapRightSVG;
+    
   var w; var h; 
 
 //--------------------------------------------------------------------------------------------
@@ -488,11 +488,11 @@ function displayText(mapSVG, zipCodes, factorsTable)
 
 
   var neighborhood =  mapSVG.selectAll("g.neighborhood")
-    .data(neighborhoodLabels)
+      .data(neighborhoodLabels)
       .enter()
-    .append("g")
-    .attr("class", "neighborhoodLabel")
-    .attr("transform", function(d) {
+      .append("g")
+      .attr("class", "neighborhoodLabel")
+      .attr("transform", function(d) {
           //console.log("d.lon, d.lat" + d.lon + ", " + d.lat);
           console.log(JSON.stringify(d))
           console.log("long, d[3]: " + d[3]);
@@ -500,26 +500,29 @@ function displayText(mapSVG, zipCodes, factorsTable)
           return "translate(" + projection([ d[2], d[3]]) + ")";
     })
       .attr("d", path)
-    .on("mouseover", function(d) {
-      d3.select(this).transition().duration(300).style("opacity", 1);
-      mapsTooltipDiv.transition().duration(300)
-      .style("opacity", 1)
-      var id = d[0];
-      mapsTooltipDiv.text(id)
-      .style("left", (d3.event.pageX) + "px")
-      .style("top", (d3.event.pageY + 30) + "px");
+      .on("mouseover", function(d) {
+	  d3.select(this).transition().duration(300).style("opacity", 1);
+	  mapsTooltipDiv.transition().duration(300)
+	      .style("opacity", 1)
+	  var id = d[0];
+	  mapsTooltipDiv.text(id)
+	      .style("left", (d3.event.pageX) + "px")
+	      .style("top", (d3.event.pageY + 30) + "px");
       }) // on mouseover
     
-    .on("mouseout", function() {
-      d3.select(this)
-      .transition().duration(300)
-      .style("opacity", 0.8);
-      mapsTooltipDiv.transition().duration(300)
-        .style("opacity", 0);
-         }) // on mouseout;
-
-  neighborhood.append("text")
-      .text(function(d){console.log("adding text: " + d[1]); return d[1];});
+      .on("mouseout", function() {
+	  d3.select(this)
+	      .transition().duration(300)
+	      .style("opacity", 0.8);
+	  mapsTooltipDiv.transition().duration(300)
+              .style("opacity", 0);
+      }) // on mouseout;
+    
+    neighborhood.append("text")
+	.text(function(d){
+	    console.log("adding text: " + d[1]);
+	    return d[1];
+	});
 
 } // displayText
 //----------------------------------------------------------------------------------------------------

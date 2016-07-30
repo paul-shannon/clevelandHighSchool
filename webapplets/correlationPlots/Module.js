@@ -29,8 +29,11 @@ var CorrelationPlotsModule = (function () {
       // make sure to register, eg,
       // hub.addMessageHandler("sendSelectionTo_EnvironmentalMap", handleSelections);
 
-  var recalculateRegression; 
+  var recalculateRegression;
 
+  var svg;
+  var neighborhoodNames; 
+  
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
@@ -38,13 +41,16 @@ function initializeUI()
   recalculateRegression.click(sendingSelectedIDs); //sends selectedIDs to the hub
   hub.disableButton(recalculateRegression); // automatically disables button
 
+  displayNeighborhoodNames = $("#displayNeighborhoodNames");
+  displayNeighborhoodNames.click(displayingNeighborhoodNames); 
+  
   plotTitleDiv = $("#correlationPlotTitleDiv");
   plotDiv = $("#correlationPlottingDiv");
   d3plotDiv = d3.select("#correlationPlottingDiv");
   console.log("div: " + plotDiv)
   $(window).resize(handleWindowResize);
   handleWindowResize();
-
+  
 }  // initializeUI
 //----------------------------------------------------------------------------------------------------
 function handleWindowResize ()
@@ -66,18 +72,19 @@ function handleWindowResize ()
 //--------------------------------------------------------------------------------
 function brushReader ()
 {
-  selectedIDs = []; // prevents the brushReader from collecting selectedIDs
-  console.log("brushReader");
-  selectedRegion = d3brush.extent();
-  x0 = selectedRegion[0][0];
-  x1 = selectedRegion[1][0];
-  width = Math.abs(x0-x1);
-  if(width < 0.001) 
-    selectedRegion = null
-  else{
-    getSelection(selectedIDs);}
-    
-}; // d3PlotBrushReader
+    console.log("brushReader");
+
+    selectedIDs=[];
+	selectedRegion = d3brush.extent();
+	x0 = selectedRegion[0][0];
+	x1 = selectedRegion[1][0];
+	width = Math.abs(x0-x1);
+	if(width < 0.001) 
+	    selectedRegion = null
+	else{
+	    getSelection(selectedIDs);}
+
+} // d3PlotBrushReader
 //--------------------------------------------------------------------------------
 function d3plotPrep (msg)
 {
@@ -136,21 +143,20 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
              .range([height-padding, padding]); // note inversion
 
   // must remove the svg from a d3-selected object, not just a jQuery object
-  d3plotDiv.select("#plotSVG").remove();  // so that append("svg") is not cumulative
+  d3plotDiv.select("#plotSVG").remove();  // so that append("svg") is not cumulative 
+    
+    d3brush = d3.svg.brush()
+        .x(xScale)
+        .y(yScale)
+        .on("brushend", brushReader); 
 
-  d3brush = d3.svg.brush()
-              .x(xScale)
-              .y(yScale)
-              .on("brushend", brushReader);
-
-
-  var svg = d3.select("#correlationPlottingDiv")
+  svg = d3.select("#correlationPlottingDiv")
               .append("svg")
               .attr("id", "plotSVG")
               .attr("width", width)
               .attr("height", height)
               .call(d3brush);
- 
+    
   xAxis = d3.svg.axis()
                 .scale(xScale)
                 .ticks(10)
@@ -180,7 +186,9 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   svg.selectAll("circle")
      .data(dataset)
      .enter()
-     .append("circle")
+	.append("circle")
+                  .attr("class", "circles")
+
      .attr("cx", function(d){
        return xScale(d.x);
      })
@@ -210,7 +218,7 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   svg.append("g")
      .attr("class", "axis")
      .attr("transform", "translate(" + padding + ",0)")
-     .call(yAxis);
+	.call(yAxis);
 
   console.log("--- about to draw regression line");
   console.log(JSON.stringify(fittedLine))
@@ -355,14 +363,6 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
 
   padding = 50;
 
-
-  var svg = d3.select("#plotSVG")
-              .append("svg")
-              .attr("id", "plotSVG")
-              .attr("width", width)
-              .attr("height", height); 
-
-
   var xTranslationForYAxis = xScale(0);
   var yTranslationForXAxis = yScale(10);
 
@@ -393,6 +393,29 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
 
 }//displayingSecondLine	
 //--------------------------------------------------------------------------------
+function displayingNeighborhoodNames()
+{
+    console.log("displaying NeighborhoodNames");
+
+    svg.selectAll("text")
+	.data(dataset)
+	.enter()
+	.append("text")
+	.text(function(d){
+	    return d["id"];
+	})
+        .attr("x",function(d){
+	    return d["x"];
+	})
+	.attr("y", function(d){
+	    return d["y"];
+	})
+	.attr("font-family", "sans-serif")
+	.attr("font-size", "15px")
+	.attr("fill", "red");
+	
+}//displayingNeighborhoodNames	
+//--------------------------------------------------------------------------------
 function handleSelections(msg)
 {
    console.log("--- Module.correlationPlots::handleSelections")
@@ -418,7 +441,22 @@ function datasetSpecified(msg)
    console.log("corPlot, datasteSpecified, name: " + datasetName);
    console.log(msg);
 
+   cmd = "getDatasetItemsByName";
+   itemsRequested = ["tbl.factors", "tbl.neighborhoods"];
+
+   var payload = {datasetName: datasetName, items: itemsRequested}
+   var newMsg = {cmd: cmd,  callback: "storeData", status: "request", payload: payload};
+   hub.send(JSON.stringify(newMsg));
+    
 } // datasetSpecified
+//--------------------------------------------------------------------------------
+function storeData(msg)
+{
+  console.log("--- Module.SSEF storeData");
+  console.log(JSON.stringify(msg.cmd));
+  factorsTable = msg.payload["tbl.factors"];
+  neighborhoodNames = msg.payload["tbl.neighborhoods"].mtx; 
+}// storeData
 //--------------------------------------------------------------------------------
 function plotCorrelation(msg)
 {
@@ -433,7 +471,8 @@ function plotCorrelation(msg)
 function initializeModule()
 {
   hub.addOnDocumentReadyFunction(initializeUI);
-  hub.addMessageHandler("datasetSpecified", datasetSpecified);
+    hub.addMessageHandler("datasetSpecified", datasetSpecified);
+    hub.addMessageHandler("storeData", storeData); 
   hub.addMessageHandler("correlationPlot", plotCorrelation);
   hub.addMessageHandler("sendSelectionTo_correlationsPlotter", handleSelections);
   hub.addMessageHandler("replotRegressionLine",replotRegressionLine); 

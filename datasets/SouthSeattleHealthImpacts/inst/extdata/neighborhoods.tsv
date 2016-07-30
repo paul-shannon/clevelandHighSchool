@@ -1,8 +1,8 @@
 zip	neighborhood	lon	lat
 98102	Eastlake	-122.334	47.6405
 98105	U District, Laurelhurst	-122.31	47.657707
-98106	White	-122.360	47.545
-98106	Center	-122.360	47.540
+98106	White Center	-122.360	47.545
+#98106	Center	-122.360	47.540
 98107	Ballard	-122.39	47.668
 98108	Beacon Hill	-122.33	47.545
 98108	Georgetown	-122.33	47.540

@@ -1,6 +1,7 @@
 var svg;
-var neighborhoodNames; 
+var neighborhoodNames;
 var dataset;                 // assigned from payload of incoming plotxy message
+
 
 //----------------------------------------------------------------------------------------------------
 var CorrelationPlotsModule = (function () {
@@ -12,6 +13,7 @@ var CorrelationPlotsModule = (function () {
   var selectedRegion;          // assigned out of brushReader function
   var selectedIDs=[];       // empty array, zipCodes 
   var dataReceived = false; // when true, window resize does replot of data
+  var dataset;                 // assigned from payload of incoming plotxy message
 
   var fittedLine;              // assembled from payload yFit and x vector
   var regressionLine2 = null; //when != null, handleWindowResize resizes the line, second "fitted Line"
@@ -33,7 +35,6 @@ var CorrelationPlotsModule = (function () {
       // hub.addMessageHandler("sendSelectionTo_EnvironmentalMap", handleSelections);
 
   var recalculateRegression;
-
   
 //--------------------------------------------------------------------------------------------
 function initializeUI()
@@ -41,9 +42,6 @@ function initializeUI()
   recalculateRegression = $("#recalculateRegression");
   recalculateRegression.click(sendingSelectedIDs); //sends selectedIDs to the hub
   hub.disableButton(recalculateRegression); // automatically disables button
-
-  displayNeighborhoodNames = $("#displayNeighborhoodNames");
-  displayNeighborhoodNames.click(displayingNeighborhoodNames); 
   
   plotTitleDiv = $("#correlationPlotTitleDiv");
   plotDiv = $("#correlationPlottingDiv");
@@ -233,7 +231,7 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
        })
 
   console.log("--- about to draw axes");
-
+    
   svg.append("g")
      .attr("class", "axis")
      .attr("transform", "translate(0," + (height - padding) + ")")
@@ -255,18 +253,7 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
      .attr("y1", yScale(fittedLine["y1"]))
      .attr("x2", xScale(fittedLine["x2"]))
      .attr("y2", yScale(fittedLine["y2"]));
-
-
-     /*********
-    svg.append("text")
-      .attr("class", "x label")
-      .attr("text-anchor", "end")
-      .attr("x", xScale(40))
-      .attr("y", yScale(50))
-      .text(xAxisLabel);
-    *********/
-
-
+    
 } // d3plot
 //--------------------------------------------------------------------------------
 function getSelection(selectedIDs)
@@ -403,29 +390,6 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
     .attr("y2", yScale(regressionLine2["y2"]));
 
 }//displayingSecondLine	
-//--------------------------------------------------------------------------------
-function displayingNeighborhoodNames()
-{
-    console.log("displaying NeighborhoodNames");
-
-    svg.selectAll("text")
-	.data(dataset)
-	.enter()
-	.append("text")
-	.text(function(d){
-	    return d["id"];
-	})
-        .attr("x",function(d){
-	    return d["x"];
-	})
-	.attr("y", function(d){
-	    return d["y"];
-	})
-	.attr("font-family", "sans-serif")
-	.attr("font-size", "15px")
-	.attr("fill", "red");
-	
-}//displayingNeighborhoodNames	
 //--------------------------------------------------------------------------------
 function handleSelections(msg)
 {

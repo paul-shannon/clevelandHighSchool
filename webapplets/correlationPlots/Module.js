@@ -35,7 +35,8 @@ var CorrelationPlotsModule = (function () {
       // hub.addMessageHandler("sendSelectionTo_EnvironmentalMap", handleSelections);
 
   var recalculateRegression;
-  
+
+  var mouseShiftKey = false; 
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
@@ -71,17 +72,23 @@ function handleWindowResize ()
 //--------------------------------------------------------------------------------
 function brushReader ()
 {
-    console.log("brushReader");
+  console.log("brushReader");
+  console.log("the value of the shiftkey is " + mouseShiftKey);
+  console.log("selected IDs: " + selectedIDs); 
+  
+  if (!mouseShiftKey){
+    selectedIDs = [];
+    }
 
-    selectedIDs=[];
-	selectedRegion = d3brush.extent();
-	x0 = selectedRegion[0][0];
-	x1 = selectedRegion[1][0];
-	width = Math.abs(x0-x1);
-	if(width < 0.001) 
-	    selectedRegion = null
-	else{
-	    getSelection(selectedIDs);}
+  selectedRegion = d3brush.extent();
+  x0 = selectedRegion[0][0];
+  x1 = selectedRegion[1][0];
+  width = Math.abs(x0-x1);
+  
+  if(width < 0.001) 
+    selectedRegion = null
+  else
+    getSelection(selectedIDs);
 
 } // d3PlotBrushReader
 //--------------------------------------------------------------------------------
@@ -133,6 +140,14 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   var height = plotDiv.height();
 
   padding = 50;
+
+  d3.select(window).on("click", function() {
+    if (d3.event.shiftKey)
+      mouseShiftKey = true; 
+    else
+      mouseShiftKey = false; 
+  });
+    
   xScale = d3.scale.linear()
              .domain([xMin,xMax])
              .range([padding,width-padding]);
@@ -144,70 +159,69 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   // must remove the svg from a d3-selected object, not just a jQuery object
   d3plotDiv.select("#plotSVG").remove();  // so that append("svg") is not cumulative 
     
-    d3brush = d3.svg.brush()
-        .x(xScale)
-        .y(yScale)
-        .on("brushend", brushReader); 
+  d3brush = d3.svg.brush()
+              .x(xScale)
+              .y(yScale)
+	      .on("brushend", brushReader); 
 
   svg = d3.select("#correlationPlottingDiv")
-              .append("svg")
-              .attr("id", "plotSVG")
-              .attr("width", width)
-              .attr("height", height)
-              .call(d3brush);
+          .append("svg")
+          .attr("id", "plotSVG")
+          .attr("width", width)
+          .attr("height", height)
+          .call(d3brush);
     
   xAxis = d3.svg.axis()
-                .scale(xScale)
-                .ticks(10)
-                .orient("bottom")
-                .tickSize(10);
+            .scale(xScale)
+            .ticks(10)
+            .orient("bottom")
+            .tickSize(10);
 
   yAxis = d3.svg.axis()
-                .scale(yScale)
-                .ticks(10)
-                .tickSize(10)
-                .orient("left");
+            .scale(yScale)
+            .ticks(10)
+            .tickSize(10)
+            .orient("left");
 
 
   var xTranslationForYAxis = xScale(0);
   var yTranslationForXAxis = yScale(10);
 
   var tooltip = d3plotDiv.append("div")
-                   .attr("class", "tooltip")
-                   .style("position", "absolute")
-                   .style("z-index", "10")
-                   .style("visibility", "hidden")
-                   .text("a simple tooltip");
+                  .attr("class", "tooltip")
+                  .style("position", "absolute")
+                  .style("z-index", "10")
+                  .style("visibility", "hidden")
+                  .text("a simple tooltip");
 
   console.log("--- about to draw points, count: " + dataset.length);
   console.log(JSON.stringify(dataset))
 
   svg.selectAll("circle")
-     .data(dataset)
-     .enter()
-	.append("circle")
-                  .attr("class", "circles")
-
-     .attr("cx", function(d){
-       return xScale(d.x);
-     })
-     .attr("cy", function(d){
-       return yScale(d.y);
-     })
-     .attr("r", function(d){
-       return 5;
-     })
-     .style("fill", function(d){
-       return "red";
-     })
-     .on("mouseover", function(d,i){   // no id assigned yet...
-       tooltip.text(d.id);
-       return tooltip.style("visibility", "visible");
-     })
-     .on("mousemove", function(){
-       return tooltip.style("top",
-         (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
-       .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+    .data(dataset)
+    .enter()
+    .append("circle")
+    .attr("class", "circles")
+    .attr("cx", function(d){
+      return xScale(d.x);
+      })
+    .attr("cy", function(d){
+      return yScale(d.y);
+      })
+    .attr("r", function(d){
+      return 5;
+      })
+    .style("fill", function(d){
+      return "red";
+      })
+    .on("mouseover", function(d,i){   // no id assigned yet...
+      tooltip.text(d.id);
+      return tooltip.style("visibility", "visible");
+      })
+    .on("mousemove", function(){
+      return tooltip.style("top",
+        (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+    .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 
   console.log("--- about to draw text");
 
@@ -216,17 +230,17 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
      .enter()
      .append("text")
      .text(function(d) {
-        for(var n=0; n < neighborhoodNames.length; n++) {
-           if(neighborhoodNames[n][0] == d.id){
-             return(neighborhoodNames[n][1]);
-             } // if
-           } // for n
-        return(d.id);
-        })
-    .attr("x", function(d) {
+       for(var n=0; n < neighborhoodNames.length; n++) {
+         if(neighborhoodNames[n][0] == d.id){
+           return(neighborhoodNames[n][1]);
+           } // if
+         } // for n
+         return(d.id);
+       })
+    .attr("x", function(d){
        return xScale(d.x);
        })
-    .attr("y", function(d) {
+    .attr("y", function(d){
        return yScale(d.y);
        })
 
@@ -240,7 +254,7 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   svg.append("g")
      .attr("class", "axis")
      .attr("transform", "translate(" + padding + ",0)")
-	.call(yAxis);
+     .call(yAxis);
 
   console.log("--- about to draw regression line");
   console.log(JSON.stringify(fittedLine))
@@ -253,7 +267,7 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
      .attr("y1", yScale(fittedLine["y1"]))
      .attr("x2", xScale(fittedLine["x2"]))
      .attr("y2", yScale(fittedLine["y2"]));
-    
+
 } // d3plot
 //--------------------------------------------------------------------------------
 function getSelection(selectedIDs)
@@ -446,8 +460,8 @@ function plotCorrelation(msg)
 function initializeModule()
 {
   hub.addOnDocumentReadyFunction(initializeUI);
-    hub.addMessageHandler("datasetSpecified", datasetSpecified);
-    hub.addMessageHandler("storeData", storeData); 
+  hub.addMessageHandler("datasetSpecified", datasetSpecified);
+  hub.addMessageHandler("storeData", storeData); 
   hub.addMessageHandler("correlationPlot", plotCorrelation);
   hub.addMessageHandler("sendSelectionTo_correlationsPlotter", handleSelections);
   hub.addMessageHandler("replotRegressionLine",replotRegressionLine); 

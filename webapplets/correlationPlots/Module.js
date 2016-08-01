@@ -1,3 +1,7 @@
+var svg;
+var neighborhoodNames; 
+var dataset;                 // assigned from payload of incoming plotxy message
+
 //----------------------------------------------------------------------------------------------------
 var CorrelationPlotsModule = (function () {
 
@@ -8,7 +12,6 @@ var CorrelationPlotsModule = (function () {
   var selectedRegion;          // assigned out of brushReader function
   var selectedIDs=[];       // empty array, zipCodes 
   var dataReceived = false; // when true, window resize does replot of data
-  var dataset;                 // assigned from payload of incoming plotxy message
 
   var fittedLine;              // assembled from payload yFit and x vector
   var regressionLine2 = null; //when != null, handleWindowResize resizes the line, second "fitted Line"
@@ -31,8 +34,6 @@ var CorrelationPlotsModule = (function () {
 
   var recalculateRegression;
 
-  var svg;
-  var neighborhoodNames; 
   
 //--------------------------------------------------------------------------------------------
 function initializeUI()
@@ -210,6 +211,29 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
          (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
        .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 
+  console.log("--- about to draw text");
+
+  svg.selectAll("text")
+     .data(dataset)
+     .enter()
+     .append("text")
+     .text(function(d) {
+        for(var n=0; n < neighborhoodNames.length; n++) {
+           if(neighborhoodNames[n][0] == d.id){
+             return(neighborhoodNames[n][1]);
+             } // if
+           } // for n
+        return(d.id);
+        })
+    .attr("x", function(d) {
+       return xScale(d.x);
+       })
+    .attr("y", function(d) {
+       return yScale(d.y);
+       })
+
+  console.log("--- about to draw axes");
+
   svg.append("g")
      .attr("class", "axis")
      .attr("transform", "translate(0," + (height - padding) + ")")
@@ -232,21 +256,8 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
      .attr("x2", xScale(fittedLine["x2"]))
      .attr("y2", yScale(fittedLine["y2"]));
 
-   /**********
-   svg.selectAll("line")
-      .data(fittedLine)
-      .enter().append("line")
-      .attr("class", "line")
-      .style("stroke-width", 1)
-      .style("stroke", "green")
-      .attr("x1", function(f) {var x1 = f["x0"]; console.log("f[0]: " + x1);  return xScale(x1);})
-      .attr("y1", function(f) {var y1 = f["y0"]; console.log("f[1]: " + y1);  return yScale(y1);})
-      .attr("x2", function(f) {var x2 = f["x1"]; console.log("f[2]: " + x2);  return xScale(x2);})
-      .attr("y2", function(f) {var y2 = f["y1"]; console.log("f[3]: " + y2);  return yScale(y2);});
-    *********/
 
-
-    /*********
+     /*********
     svg.append("text")
       .attr("class", "x label")
       .attr("text-anchor", "end")

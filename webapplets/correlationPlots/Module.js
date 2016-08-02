@@ -1,17 +1,20 @@
-var svg;
-var neighborhoodNames;
-var dataset;                 // assigned from payload of incoming plotxy message
-
+var selectedNames;           // collected points 
 
 //----------------------------------------------------------------------------------------------------
 var CorrelationPlotsModule = (function () {
+
+  var svg;                   
+  var neighborhoodNames;   
+  var selectedIDs;             // collected zipCodes
+  var circle;
+  var dataset;                 // assigned from payload of incoming plotxy message
 
   var datasetName = null;
   var plotTitleDiv;
   var plotDiv;
   var d3plotDiv;
   var selectedRegion;          // assigned out of brushReader function
-  var selectedIDs=[];       // empty array, zipCodes 
+  //var selectedIDs=[];       // empty array, zipCodes 
   var dataReceived = false; // when true, window resize does replot of data
   var dataset;                 // assigned from payload of incoming plotxy message
 
@@ -78,6 +81,7 @@ function brushReader ()
   
   if (!mouseShiftKey){
     selectedIDs = [];
+    deselectPoints(); 
     }
 
   selectedRegion = d3brush.extent();
@@ -197,11 +201,12 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   console.log("--- about to draw points, count: " + dataset.length);
   console.log(JSON.stringify(dataset))
 
-  svg.selectAll("circle")
+   circle = svg.selectAll("circle")
     .data(dataset)
     .enter()
     .append("circle")
     .attr("class", "circles")
+    .attr('id', function(d,i){return(i)})
     .attr("cx", function(d){
       return xScale(d.x);
       })
@@ -217,12 +222,14 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
     .on("mouseover", function(d,i){   // no id assigned yet...
       tooltip.text(d.id);
       return tooltip.style("visibility", "visible");
-      })
+    })
     .on("mousemove", function(){
       return tooltip.style("top",
-        (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
-    .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
-
+        (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
+    })
+    .on("mouseout", function(){
+      return tooltip.style("visibility", "hidden");
+    }); 
   console.log("--- about to draw text");
 
   svg.selectAll("text")
@@ -274,7 +281,7 @@ function getSelection(selectedIDs)
 {
   console.log("--- entering getSelection");   
 
-  var selectedNames = [];
+  selectedNames = [];
     
   if(selectedRegion == null)
   {
@@ -300,9 +307,10 @@ function getSelection(selectedIDs)
     y = dataset[i].y;
     if(x >= x0 & x <= x1 & y >= y0 & y <= y1){
       console.log ("TRUE");
-      selectedNames.push(i);
+      selectedNames.push(i); //collects points
       selectedIDs.push(dataset[i].id); //collects selectedIDs
-      hub.enableButton(recalculateRegression); //only if there are points will the button be enabled 
+      hub.enableButton(recalculateRegression); //only if there are points will the button be enabled
+      selectPoints(); 
     }  
   } // for i
 
@@ -331,7 +339,6 @@ function sendingSelectedIDs(msg)
   console.log(returnMsg);
   hub.send(JSON.stringify(returnMsg));
 
- 
   hub.disableButton(recalculateRegression); //disables the button once it is clicked, requires a new selection to be enabled 
 
 } // sendingSelectedIDs
@@ -403,7 +410,32 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
     .attr("x2", xScale(regressionLine2["x2"]))
     .attr("y2", yScale(regressionLine2["y2"]));
 
-}//displayingSecondLine	
+}//displayingSecondLine
+//--------------------------------------------------------------------------------
+selectPoints = function(pointIDs)
+{
+  pointIDs = selectedNames; 
+  d3.selectAll("circle")
+     .filter(function(d, i){
+         if(pointIDs.indexOf(i) >= 0)
+	   return(true);
+	 else
+	   return(false);
+         }) // filter
+     .classed("highlighted", true)
+     .transition()
+     .attr("r", 10)
+     .duration(500);
+		   
+} // selectPoints
+//--------------------------------------------------------------------------------
+deselectPoints = function()
+{
+   d3.selectAll("circle")
+     .attr('class', 'circles')
+     .attr("r", 5);
+		   
+} // deselectPoints
 //--------------------------------------------------------------------------------
 function handleSelections(msg)
 {

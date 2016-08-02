@@ -133,37 +133,28 @@ function changeColor(button)
 
 } // changeColor
 //------------------------------------------------------------------      
-selectPoints = function()
+selectPoints = function(pointIDs)
 {
-   d3.selectAll("circle")
+  pointIDs = [1, 4, 6]; 
+  d3.selectAll("circle")
      .filter(function(d, i){
-        if(typeof(d) == "undefined")
-           return(false);
-        var thisCirclesID = d.id;
-        return (i < 4)
-        }) // filter
+         if(pointIDs.indexOf(i) >= 0)
+	   return(true);
+	 else
+	   return(false);
+         }) // filter
      .classed("highlighted", true)
      .transition()
      .attr("r", 20)
      .duration(500);
-
 		   
 } // selectPoints
 //------------------------------------------------------------------
 deSelectPoints = function()
 {
    d3.selectAll("circle")
-     .filter(function(d, i){
-        if(typeof(d) == "undefined")
-           return(false);
-        var thisCirclesID = d.id;
-        return (i < 4)
-        }) // filter
-     .classed("highlighted", false)
-     .transition()
-     .attr("r", 8)
-     .duration(500);
-
+     .attr('class', 'circles')
+     .attr("r", 8);
 		   
 } // selectPoints
 //------------------------------------------------------------------ 		    

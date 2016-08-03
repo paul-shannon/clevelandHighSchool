@@ -120,11 +120,9 @@ function scatterPlot()
     var selectedIds =[];
     console.log("mouse up " + i);
     selectedIds.push(i);
-    selectPoints(selectedIds);
     })
   .on("mousedown", function(i){
     console.log("mouse down" + i);
-    selectedIds.push(i);
     }); 
 
 } // scatterPlot

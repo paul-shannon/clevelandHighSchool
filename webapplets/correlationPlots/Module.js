@@ -3,7 +3,7 @@ var CorrelationPlotsModule = (function () {
 
   var svg;                   
   var neighborhoodNames;   
-  var selectedIDs;             // collected zipCodes
+  var selectedIDs= [];             // collected zipCodes
   var selectedNames;           // collected points   
   var circle;
 
@@ -35,14 +35,18 @@ var CorrelationPlotsModule = (function () {
       // hub.addMessageHandler("sendSelectionTo_EnvironmentalMap", handleSelections);
 
   var recalculateRegression;
-
+  var clearingSelectedIDs; 
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
   recalculateRegression = $("#recalculateRegression");
   recalculateRegression.click(sendingSelectedIDs); //sends selectedIDs to the hub
   hub.disableButton(recalculateRegression); // automatically disables button
-  
+
+  clearSelectedIDs = $("#clearSelectedIDs");
+  clearSelectedIDs.click(clearingSelectedIDs);
+  hub.disableButton(clearSelectedIDs);
+    
   plotTitleDiv = $("#correlationPlotTitleDiv");
   plotDiv = $("#correlationPlottingDiv");
   d3plotDiv = d3.select("#correlationPlottingDiv");
@@ -189,7 +193,7 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   console.log("--- about to draw points, count: " + dataset.length);
   console.log(JSON.stringify(dataset))
 
-   circle = svg.selectAll("circle")
+  circle = svg.selectAll("circle")
     .data(dataset)
     .enter()
     .append("circle")
@@ -429,9 +433,32 @@ deselectPoints = function()
 //--------------------------------------------------------------------------------
 function pointClicked(d,i){
   console.log("d:" +  d.id); 	
-  
-} // deselectPoints
+    
+  d3.select(this).transition()
+    .attr('r', 18)
+    .duration(500);
+
+  selectedIDs.push(d.id);
+  console.log('selectedIDs: ' + selectedIDs);
+
+  if (selectedIDs.length > 0){
+    hub.enableButton(recalculateRegression);
+      hub.enableButton(clearSelectedIDs); }
+    
+} // 
 //--------------------------------------------------------------------------------
+function clearingSelectedIDs(){
+    console.log("clearing selected IDs "); 
+    selectedIDs = []
+
+     d3.selectAll("circle")
+     .attr('class', 'circles')
+     .attr("r", 5);
+
+    hub.disableButton(clearSelectedIDs);
+    
+} // clearingSelectedIDs
+// --------------------------------------------------------------------------------
 function handleSelections(msg)
 {
    console.log("--- Module.correlationPlots::handleSelections")

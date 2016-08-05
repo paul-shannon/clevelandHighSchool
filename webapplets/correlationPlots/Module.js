@@ -1,20 +1,17 @@
-var selectedNames;           // collected points 
-
 //----------------------------------------------------------------------------------------------------
 var CorrelationPlotsModule = (function () {
 
   var svg;                   
   var neighborhoodNames;   
   var selectedIDs;             // collected zipCodes
+  var selectedNames;           // collected points   
   var circle;
-  var dataset;                 // assigned from payload of incoming plotxy message
 
   var datasetName = null;
   var plotTitleDiv;
   var plotDiv;
   var d3plotDiv;
   var selectedRegion;          // assigned out of brushReader function
-  //var selectedIDs=[];       // empty array, zipCodes 
   var dataReceived = false; // when true, window resize does replot of data
   var dataset;                 // assigned from payload of incoming plotxy message
 
@@ -39,7 +36,6 @@ var CorrelationPlotsModule = (function () {
 
   var recalculateRegression;
 
-  var mouseShiftKey = false; 
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
@@ -50,7 +46,8 @@ function initializeUI()
   plotTitleDiv = $("#correlationPlotTitleDiv");
   plotDiv = $("#correlationPlottingDiv");
   d3plotDiv = d3.select("#correlationPlottingDiv");
-  console.log("div: " + plotDiv)
+  console.log("div: " + plotDiv);
+    
   $(window).resize(handleWindowResize);
   handleWindowResize();
   
@@ -76,13 +73,11 @@ function handleWindowResize ()
 function brushReader ()
 {
   console.log("brushReader");
-  console.log("the value of the shiftkey is " + mouseShiftKey);
+
+  selectedIDs = [];
+  deselectPoints(); 
+
   console.log("selected IDs: " + selectedIDs); 
-  
-  if (!mouseShiftKey){
-    selectedIDs = [];
-    deselectPoints(); 
-    }
 
   selectedRegion = d3brush.extent();
   x0 = selectedRegion[0][0];
@@ -109,7 +104,7 @@ function d3plotPrep (msg)
 
   for(var i=0; i < datasetLength; i++){
     dataset.push({x: payload.vec1[i], y: payload.vec2[i], id: payload.entities[i]});
-  }
+    }
 
   var yFit = msg.payload.yFit;
   var xFit = msg.payload.vec1;
@@ -144,13 +139,6 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
   var height = plotDiv.height();
 
   padding = 50;
-
-  d3.select(window).on("click", function() {
-    if (d3.event.shiftKey)
-      mouseShiftKey = true; 
-    else
-      mouseShiftKey = false; 
-  });
     
   xScale = d3.scale.linear()
              .domain([xMin,xMax])
@@ -172,8 +160,8 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
           .append("svg")
           .attr("id", "plotSVG")
           .attr("width", width)
-          .attr("height", height)
-          .call(d3brush);
+          .attr("height", height);
+   //       .call(d3brush)
     
   xAxis = d3.svg.axis()
             .scale(xScale)
@@ -229,7 +217,8 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
     })
     .on("mouseout", function(){
       return tooltip.style("visibility", "hidden");
-    }); 
+    });
+
   console.log("--- about to draw text");
 
   svg.selectAll("text")
@@ -281,8 +270,9 @@ function getSelection(selectedIDs)
 {
   console.log("--- entering getSelection");   
 
+  selectedIDs = []; 
   selectedNames = [];
-    
+  
   if(selectedRegion == null)
   {
     var returnMsg = {cmd: msg.callback, callback: "", status: "success",
@@ -293,7 +283,7 @@ function getSelection(selectedIDs)
       return;
     hub.disableButton(recalculateRegression);
   }
-    
+  
   x0 = selectedRegion[0][0]
   x1 = selectedRegion[1][0]
   y0 = selectedRegion[0][1]
@@ -315,7 +305,7 @@ function getSelection(selectedIDs)
   } // for i
 
   if (selectedNames.length < 1) //when the selection is dragged to a place w/o points, this disables the button
-   hub.disableButton(recalculateRegression) 
+   hub.disableButton(recalculateRegression); 
     
   console.log(" found " + selectedNames.length + " selected points");
    
@@ -324,7 +314,7 @@ function getSelection(selectedIDs)
 function sendingSelectedIDs(msg)
 {
   console.log("sending Selected IDs"); 
-  
+
   payload = {datasetName: "SouthSeattleHealthImpacts",
             dataframeName: "tbl.factors",
             feature1: feature1,
@@ -397,7 +387,7 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
 	
   console.log("displaying second line"); 
 
- console.log(JSON.stringify(regressionLine2))
+  console.log(JSON.stringify(regressionLine2))
 
   //svg id is secondLine (that way it can be removed after every selection)
     
@@ -414,7 +404,6 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
 //--------------------------------------------------------------------------------
 selectPoints = function(pointIDs)
 {
-  pointIDs = selectedNames; 
   d3.selectAll("circle")
      .filter(function(d, i){
          if(pointIDs.indexOf(i) >= 0)
@@ -477,6 +466,7 @@ function storeData(msg)
   console.log(JSON.stringify(msg.cmd));
   factorsTable = msg.payload["tbl.factors"];
   neighborhoodNames = msg.payload["tbl.neighborhoods"].mtx; 
+
 }// storeData
 //--------------------------------------------------------------------------------
 function plotCorrelation(msg)

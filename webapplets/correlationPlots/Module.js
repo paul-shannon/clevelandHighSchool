@@ -217,7 +217,8 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
     })
     .on("mouseout", function(){
       return tooltip.style("visibility", "hidden");
-    });
+    })
+    .on("mouseup", pointClicked);
 
   console.log("--- about to draw text");
 
@@ -424,6 +425,11 @@ deselectPoints = function()
      .attr('class', 'circles')
      .attr("r", 5);
 		   
+} // deselectPoints
+//--------------------------------------------------------------------------------
+function pointClicked(d,i){
+  console.log("d:" +  d.id); 	
+  
 } // deselectPoints
 //--------------------------------------------------------------------------------
 function handleSelections(msg)

@@ -74,27 +74,6 @@ function handleWindowResize ()
 
 } // handleWindowResize
 //--------------------------------------------------------------------------------
-function brushReader ()
-{
-  console.log("brushReader");
-
-  selectedIDs = [];
-  deselectPoints(); 
-
-  console.log("selected IDs: " + selectedIDs); 
-
-  selectedRegion = d3brush.extent();
-  x0 = selectedRegion[0][0];
-  x1 = selectedRegion[1][0];
-  width = Math.abs(x0-x1);
-  
-  if(width < 0.001) 
-    selectedRegion = null
-  else
-    getSelection(selectedIDs);
-
-} // d3PlotBrushReader
-//--------------------------------------------------------------------------------
 function d3plotPrep (msg)
 {
   console.log("entering d3plotPrep");
@@ -153,19 +132,13 @@ function d3plot(dataset, fittedLine, xMin, xMax, yMin, yMax, xAxisLabel, yAxisLa
              .range([height-padding, padding]); // note inversion
 
   // must remove the svg from a d3-selected object, not just a jQuery object
-  d3plotDiv.select("#plotSVG").remove();  // so that append("svg") is not cumulative 
+  d3plotDiv.select("#plotSVG").remove();  // so that append("svg") is not cumulative
     
-  d3brush = d3.svg.brush()
-              .x(xScale)
-              .y(yScale)
-	      .on("brushend", brushReader); 
-
   svg = d3.select("#correlationPlottingDiv")
           .append("svg")
           .attr("id", "plotSVG")
           .attr("width", width)
           .attr("height", height);
-   //       .call(d3brush)
     
   xAxis = d3.svg.axis()
             .scale(xScale)
@@ -407,30 +380,6 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
 
 }//displayingSecondLine
 //--------------------------------------------------------------------------------
-selectPoints = function(pointIDs)
-{
-  d3.selectAll("circle")
-     .filter(function(d, i){
-         if(pointIDs.indexOf(i) >= 0)
-	   return(true);
-	 else
-	   return(false);
-         }) // filter
-     .classed("highlighted", true)
-     .transition()
-     .attr("r", 10)
-     .duration(500);
-		   
-} // selectPoints
-//--------------------------------------------------------------------------------
-deselectPoints = function()
-{
-   d3.selectAll("circle")
-     .attr('class', 'circles')
-     .attr("r", 5);
-		   
-} // deselectPoints
-//--------------------------------------------------------------------------------
 function pointClicked(d,i){
   console.log("d:" +  d.id); 	
     
@@ -445,17 +394,17 @@ function pointClicked(d,i){
     hub.enableButton(recalculateRegression);
       hub.enableButton(clearSelectedIDs); }
     
-} // 
+} // pointClicked
 //--------------------------------------------------------------------------------
 function clearingSelectedIDs(){
-    console.log("clearing selected IDs "); 
-    selectedIDs = []
+  console.log("clearing selected IDs "); 
+  selectedIDs = []
 
-     d3.selectAll("circle")
-     .attr('class', 'circles')
-     .attr("r", 5);
+  d3.selectAll("circle")
+    .attr('class', 'circles')
+    .attr("r", 5);
 
-    hub.disableButton(clearSelectedIDs);
+  hub.disableButton(clearSelectedIDs);
     
 } // clearingSelectedIDs
 // --------------------------------------------------------------------------------

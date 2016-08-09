@@ -1,9 +1,10 @@
+var selectedIDs= [];             // collected zipCodes
+var svg;                   
+
 //----------------------------------------------------------------------------------------------------
 var CorrelationPlotsModule = (function () {
 
-  var svg;                   
   var neighborhoodNames;   
-  var selectedIDs= [];             // collected zipCodes
   var selectedNames;           // collected points   
   var circle;
 
@@ -35,7 +36,8 @@ var CorrelationPlotsModule = (function () {
       // hub.addMessageHandler("sendSelectionTo_EnvironmentalMap", handleSelections);
 
   var recalculateRegression;
-  var clearingSelectedIDs; 
+  var clearingSelectedIDs;
+  var pointsCollected = false; 
 //--------------------------------------------------------------------------------------------
 function initializeUI()
 {
@@ -72,6 +74,17 @@ function handleWindowResize ()
   if (regressionLine2 != null )
      displayingSecondLine(dataset, regressionLine2, correlation2); 
 
+  // redisplays the selectedIDs when the window size changes 
+  if(pointsCollected){
+    svg.selectAll('circle')
+      .filter(function(d){
+        if(d.id == selectedIDs){
+          console.log('d.id: ' + d.id);
+   	  console.log('selectedIDs: ' + selectedIDs);
+  	  d3.select(this).attr('r', 18); }
+        }); //filter 
+  }  	
+    
 } // handleWindowResize
 //--------------------------------------------------------------------------------
 function d3plotPrep (msg)
@@ -381,6 +394,8 @@ function displayingSecondLine(dataset, regressionLine2, correlation)
 }//displayingSecondLine
 //--------------------------------------------------------------------------------
 function pointClicked(d,i){
+  pointsCollected = true; 
+  
   console.log("d:" +  d.id); 	
     
   d3.select(this).transition()
@@ -397,6 +412,8 @@ function pointClicked(d,i){
 } // pointClicked
 //--------------------------------------------------------------------------------
 function clearingSelectedIDs(){
+  pointsCollected = false;
+    
   console.log("clearing selected IDs "); 
   selectedIDs = []
 

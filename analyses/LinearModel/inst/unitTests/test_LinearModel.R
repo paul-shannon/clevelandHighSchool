@@ -8,6 +8,7 @@ runTests <- function()
   test_constructor()
   test_correlate()
   test_correlateSomeLeftOut()
+  test_verifyCorrelateSomeLeftOut()
   
 } # runTests
 #----------------------------------------------------------------------------------------------------
@@ -98,6 +99,59 @@ test_verifyCorrelateSomeLeftOut <- function()
    points(x$vec1, x$yFit, col="red")
 
 } # test_verifyCorrelateSomeLeftOut
+#----------------------------------------------------------------------------------------------------
+# plotting "Non.white.minority.population" vs  "Adults.No.Leisure.Time" in the cleveland webapp
+# then leaving out Beacon Hill, an outlier at (70, 30), -reduces- the correlation, and
+# does not change the regression line in the way I expect.
+# explore this here, by making the same base R calls found in LinearModel.R
+#
+# status (11 aug 2016): need to hand-check the correlation calculation.  still confused
+#
+test_correlateSomeLeftOut_confusion <- function()
+{
+   printf("--- test_correlateSomeLeftOut_confusion")
+   d <- SouthSeattleHealthImpacts()
+   df <- getItem(d, "tbl.factors")
+
+   feature1 <- "Non.white.minority.population"
+   feature2 <- "Adults.No.Leisure.Time"
+   
+   vec1 <- df[, feature1]
+   vec2 <- df[, feature2]
+   entities <- rownames(df)
+
+   sort.order <- order(vec1)
+   vec1 <- vec1[sort.order]
+   vec2 <- vec2[sort.order]
+   entities <- entities[sort.order]
+
+   cor <- cor(vec1, vec2)
+   yFit <- fitted(line(vec1, vec2))
+   residuals <- residuals(line(vec1, vec2))
+
+   plot(vec1, vec2, main="10 pts (red), 9 pts (blue)")
+   points(x$vec1, yFit, col="red")
+
+   omittedEntities <- "98108"
+   keeper.row.names <- setdiff(rownames(df), omittedEntities)
+   df.a <- df[keeper.row.names,]
+
+   vec1.a <- df.a[, feature1]
+   vec2.a <- df.a[, feature2]
+   entities.a <- rownames(df.a)
+
+   sort.order <- order(vec1.a)
+   vec1.a <- vec1.a[sort.order]
+   vec2.a <- vec2.a[sort.order]
+   entities.a <- entities.aa[sort.order]
+
+   cor.a <- cor(vec1.a, vec2.a)
+   yFit.a <- fitted(line(vec1.a, vec2.a))
+   residuals <- residuals(line(vec1.a, vec2.a))
+
+   points(vec1.a, yFit.a, col="blue")
+   
+} # test_correlateSomeLeftOut_bug
 #----------------------------------------------------------------------------------------------------
 if(!interactive())
     runTests()

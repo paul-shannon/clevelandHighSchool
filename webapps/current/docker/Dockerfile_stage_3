@@ -1,0 +1,10 @@
+FROM chia
+user docker
+COPY scripts/* /home/docker/scripts/
+COPY myRprofile /home/docker/
+COPY myBashCustomizations /home/docker/
+RUN cat myRprofile >> /home/docker/.Rprofile
+RUN cat myBashCustomizations >> /home/docker/.bashrc
+WORKDIR /home/docker/scripts
+RUN R -f runCleveland.R
+

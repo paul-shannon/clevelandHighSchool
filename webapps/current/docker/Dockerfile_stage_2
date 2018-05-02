@@ -1,0 +1,20 @@
+FROM chia_base
+user docker
+COPY pkgs/RUnit_0.4.31.tar.gz /home/docker/pkgs/
+WORKDIR /home/docker
+RUN mkdir /home/docker/scripts
+COPY scripts/* /home/docker/scripts
+RUN R CMD INSTALL pkgs/BiocGenerics_0.26.0.tar.gz
+RUN R CMD INSTALL pkgs/SubjectHistory_1.0.2.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/jsonlite_1.5.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/RUnit_0.4.31.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/SubjectHistory_1.0.2.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/Dataset_1.0.1.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/Groups_1.0.6.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/ChinookDataset_1.0.8.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/ChinookServer_1.0.12.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/ChinookAnalysis_1.0.1.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/LinearModel_1.1.5.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/ChinookLinearModel_1.0.3.tar.gz
+RUN R CMD INSTALL --no-test-load pkgs/SouthSeattleHealthImpacts_1.0.5.tar.gz
+
